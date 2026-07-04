@@ -1,0 +1,27 @@
+<aside class="dash-sidebar">
+  <div class="dash-sidebar-brand">
+    <%- include('../logo') %>
+    <div>
+      <strong>RocketDrop</strong>
+      <span><%= sidebarTitle || 'Dashboard' %></span>
+    </div>
+  </div>
+
+  <nav class="dash-sidebar-nav">
+    <% items.forEach((item) => { %>
+      <a href="<%= item.href %>"
+         class="dash-nav-item <%= activeTab === item.id ? 'active' : '' %>">
+        <img src="/icons/<%= item.icon %>.svg" alt="" class="dash-nav-icon" />
+        <span><%= item.label %></span>
+        <% if (item.badge) { %><span class="nav-badge"><%= item.badge %></span><% } %>
+      </a>
+    <% }) %>
+  </nav>
+
+  <div class="dash-sidebar-foot">
+    <a href="/" class="dash-nav-item muted-link">Back to Store</a>
+    <% if (typeof reportHref !== 'undefined' && reportHref) { %>
+      <a href="<%= reportHref %>" class="dash-nav-item muted-link" target="_blank">Orders Report</a>
+    <% } %>
+  </div>
+</aside>

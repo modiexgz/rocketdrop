@@ -22,9 +22,21 @@
             <td class="t-muted"><%= cat ? cat.name : '—' %></td>
             <td><%= Number(product.price).toLocaleString() %></td>
             <td class="t-right">
-              <button type="button" class="btn btn-ghost btn-sm"
-                data-edit-product
-                data-payload="<%= jsonAttr({ id: product.id, name: product.name, price: product.price, categoryId: product.categoryId, image: product.image || '', description: product.description || '' }) %>">Edit</button>
+              <details class="action-details table-details">
+                <summary class="btn btn-ghost btn-sm">Edit</summary>
+                <form method="POST" action="<%= basePath %>/products/<%= product.id %>/update" class="inline-action-form stack-form">
+                  <label class="field"><span>Name</span><input type="text" name="name" value="<%= product.name %>" required /></label>
+                  <label class="field"><span>Price</span><input type="number" name="price" value="<%= product.price %>" min="0" required /></label>
+                  <label class="field"><span>Category</span>
+                    <select name="categoryId">
+                      <% categories.forEach((c) => { %><option value="<%= c.id %>" <%= c.id === product.categoryId ? 'selected' : '' %>><%= c.name %></option><% }) %>
+                    </select>
+                  </label>
+                  <label class="field"><span>Image URL</span><input type="text" name="image" value="<%= product.image || '' %>" /></label>
+                  <label class="field"><span>Description</span><input type="text" name="description" value="<%= product.description || '' %>" /></label>
+                  <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                </form>
+              </details>
               <form method="POST" action="<%= basePath %>/products/<%= product.id %>/delete" class="inline" data-confirm="Delete this product?">
                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
               </form>
@@ -36,36 +48,22 @@
   </div>
 </section>
 
-<dialog class="modal" id="createProductModal">
-  <form method="POST" action="<%= basePath %>/products" class="modal-card">
+<div class="modern-modal" id="createProductModal" hidden>
+  <div class="modern-modal-backdrop" data-close-modal></div>
+  <div class="modern-modal-card">
     <button type="button" class="modal-close" data-close-modal>&times;</button>
-    <h3>New Product</h3>
-    <label class="field"><span>Name</span><input type="text" name="name" required /></label>
-    <label class="field"><span>Price (UGX)</span><input type="number" name="price" min="0" required /></label>
-    <label class="field"><span>Category</span>
-      <select name="categoryId">
-        <% categories.forEach((c) => { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
-      </select>
-    </label>
-    <label class="field"><span>Image URL</span><input type="text" name="image" placeholder="/images/pizza.svg" /></label>
-    <label class="field"><span>Description</span><input type="text" name="description" /></label>
-    <button type="submit" class="btn btn-primary btn-block">Create Product</button>
-  </form>
-</dialog>
-
-<dialog class="modal" id="editProductModal">
-  <form method="POST" action="" class="modal-card" id="editProductForm" data-action-template="<%= basePath %>/products/{id}/update">
-    <button type="button" class="modal-close" data-close-modal>&times;</button>
-    <h3>Edit Product</h3>
-    <label class="field"><span>Name</span><input type="text" name="name" required /></label>
-    <label class="field"><span>Price (UGX)</span><input type="number" name="price" min="0" required /></label>
-    <label class="field"><span>Category</span>
-      <select name="categoryId">
-        <% categories.forEach((c) => { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
-      </select>
-    </label>
-    <label class="field"><span>Image URL</span><input type="text" name="image" /></label>
-    <label class="field"><span>Description</span><input type="text" name="description" /></label>
-    <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
-  </form>
-</dialog>
+    <form method="POST" action="<%= basePath %>/products">
+      <h3>New Product</h3>
+      <label class="field"><span>Name</span><input type="text" name="name" required /></label>
+      <label class="field"><span>Price (UGX)</span><input type="number" name="price" min="0" required /></label>
+      <label class="field"><span>Category</span>
+        <select name="categoryId">
+          <% categories.forEach((c) => { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
+        </select>
+      </label>
+      <label class="field"><span>Image URL</span><input type="text" name="image" placeholder="/images/pizza.svg" /></label>
+      <label class="field"><span>Description</span><input type="text" name="description" /></label>
+      <button type="submit" class="btn btn-primary btn-block">Create Product</button>
+    </form>
+  </div>
+</div>

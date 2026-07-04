@@ -202,6 +202,18 @@ exports.approveOrder = (req, res) => {
     return safeRedirect(req, res, adminUrl("orders"));
   }
 
+  const payment = order.payment || { method: "cod", status: "unpaid" };
+  if (
+    payment.method !== "cod" &&
+    payment.status === "awaiting_confirmation"
+  ) {
+    req.session.flash = {
+      type: "error",
+      message: `Confirm the ${payment.method.toUpperCase()} payment for order #${order.id} before approving it.`
+    };
+    return safeRedirect(req, res, adminUrl("orders"));
+  }
+
   const { deliveryName, deliveryPhone, deliveryLocation } = req.body;
   if (!deliveryName || !deliveryName.trim() || !deliveryPhone || !deliveryPhone.trim()) {
     req.session.flash = { type: "error", message: "Delivery man name and contact are required to approve an order." };

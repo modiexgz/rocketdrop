@@ -26,11 +26,8 @@
         <img src="/icons/success.svg" alt="" class="status-icon" />
         <h2>You are an approved partner</h2>
         <p><strong><%= application.businessName %></strong> is live on RocketDrop.</p>
-        <% if (currentUser.role === 'partner') { %>
-          <a href="/partner/dashboard" class="btn btn-primary">Open Partner Dashboard</a>
-        <% } else { %>
-          <p class="muted">Please refresh the page or <a href="/auth/logout">log out and sign in again</a> to access your Partner Dashboard.</p>
-        <% } %>
+        <a href="/partner/dashboard" class="btn btn-primary">Open Partner Dashboard</a>
+        <p class="auth-hint muted">You can manage your categories, products and orders from your partner dashboard.</p>
       </div>
     <% } else { %>
       <% if (application && application.status === 'rejected') { %>

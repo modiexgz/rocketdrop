@@ -6,278 +6,111 @@
 <body class="dash-body">
   <%- include('../partials/header') %>
 
-  <main class="container section fade-in">
-    <div class="dash-head">
-      <div>
-        <h1>Admin Dashboard</h1>
-        <p class="muted">Manage categories, products, orders, partners and payments.</p>
-      </div>
-      <div class="dash-head-actions">
-        <a href="/admin/reports/orders" class="btn btn-ghost" target="_blank"><%- include('../partials/icon', { name: 'document', size: 16 }) %> Orders Report</a>
-      </div>
-    </div>
+  <div class="dash-shell">
+    <%- include('../partials/dash/sidebar', {
+      sidebarTitle: 'Admin',
+      activeTab,
+      reportHref: '/admin/reports/orders',
+      items: [
+        { id: 'orders', href: '/admin?tab=orders', icon: 'order', label: 'Orders', badge: stats.pendingOrders || null },
+        { id: 'categories', href: '/admin?tab=categories', icon: 'search', label: 'Categories' },
+        { id: 'products', href: '/admin?tab=products', icon: 'delivery', label: 'Products' },
+        { id: 'partners', href: '/admin?tab=partners', icon: 'partner', label: 'Partners', badge: stats.pendingPartners || null },
+        { id: 'users', href: '/admin?tab=users', icon: 'document', label: 'Users' }
+      ]
+    }) %>
 
-    <!-- NOTIFICATION BAR -->
-    <% if (stats.pendingOrders > 0 || stats.pendingPayments > 0 || stats.pendingPartners > 0) { %>
-      <div class="notif-bar slide-up">
-        <span class="notif-bar-icon"><%- include('../partials/icon', { name: 'bell', size: 22 }) %></span>
-        <div class="notif-bar-items">
-          <% if (stats.pendingOrders > 0) { %>
-            <a href="#orders" data-tab-link="orders"><strong><%= stats.pendingOrders %></strong> order<%= stats.pendingOrders > 1 ? 's' : '' %> waiting for approval</a>
-          <% } %>
-          <% if (stats.pendingPayments > 0) { %>
-            <a href="#orders" data-tab-link="orders"><strong><%= stats.pendingPayments %></strong> mobile money payment<%= stats.pendingPayments > 1 ? 's' : '' %> to confirm</a>
-          <% } %>
-          <% if (stats.pendingPartners > 0) { %>
-            <a href="#partners" data-tab-link="partners"><strong><%= stats.pendingPartners %></strong> partner application<%= stats.pendingPartners > 1 ? 's' : '' %> to review</a>
-          <% } %>
+    <div class="dash-main">
+      <% if (stats.pendingOrders > 0 || stats.pendingPayments > 0 || stats.pendingPartners > 0) { %>
+        <div class="notif-bar slide-up">
+          <span class="notif-bar-icon"><%- include('../partials/icon', { name: 'bell', size: 22 }) %></span>
+          <div class="notif-bar-items">
+            <% if (stats.pendingOrders > 0) { %>
+              <a href="/admin?tab=orders"><strong><%= stats.pendingOrders %></strong> order<%= stats.pendingOrders > 1 ? 's' : '' %> need approval</a>
+            <% } %>
+            <% if (stats.pendingPayments > 0) { %>
+              <a href="/admin?tab=orders"><strong><%= stats.pendingPayments %></strong> payment<%= stats.pendingPayments > 1 ? 's' : '' %> to confirm</a>
+            <% } %>
+            <% if (stats.pendingPartners > 0) { %>
+              <a href="/admin?tab=partners"><strong><%= stats.pendingPartners %></strong> partner<%= stats.pendingPartners > 1 ? 's' : '' %> to review</a>
+            <% } %>
+          </div>
         </div>
-      </div>
-    <% } %>
+      <% } %>
 
-    <!-- STATS -->
-    <div class="stats-grid">
-      <div class="stat-card reveal"><span class="stat-value"><%= stats.orders %></span><span class="stat-label">Orders</span></div>
-      <div class="stat-card reveal"><span class="stat-value"><%= stats.products %></span><span class="stat-label">Products</span></div>
-      <div class="stat-card reveal"><span class="stat-value"><%= stats.categories %></span><span class="stat-label">Categories</span></div>
-      <div class="stat-card reveal"><span class="stat-value"><%= stats.users %></span><span class="stat-label">Customers</span></div>
-      <div class="stat-card stat-accent reveal"><span class="stat-value">UGX <%= stats.revenue.toLocaleString() %></span><span class="stat-label">Revenue</span></div>
-    </div>
-
-    <!-- TABS -->
-    <nav class="dash-tabs">
-      <button type="button" data-tab="orders" class="<%= activeTab === 'orders' ? 'active' : '' %>">Orders <% if (stats.pendingOrders > 0) { %><span class="tab-badge"><%= stats.pendingOrders %></span><% } %></button>
-      <button type="button" data-tab="categories" class="<%= activeTab === 'categories' ? 'active' : '' %>">Categories</button>
-      <button type="button" data-tab="products" class="<%= activeTab === 'products' ? 'active' : '' %>">Products</button>
-      <button type="button" data-tab="partners" class="<%= activeTab === 'partners' ? 'active' : '' %>">Partners <% if (stats.pendingPartners > 0) { %><span class="tab-badge"><%= stats.pendingPartners %></span><% } %></button>
-      <button type="button" data-tab="users" class="<%= activeTab === 'users' ? 'active' : '' %>">Users</button>
-    </nav>
-
-    <!-- ORDERS PANEL -->
-    <section class="panel <%= activeTab === 'orders' ? 'active' : '' %>" id="orders">
-      <div class="panel-head">
-        <h2>Orders</h2>
-        <div class="panel-actions">
-          <button type="button" class="btn btn-primary btn-sm" data-open-modal="createOrderModal">+ New Order</button>
-          <a class="btn btn-ghost btn-sm" href="/admin/reports/orders" target="_blank"><%- include('../partials/icon', { name: 'print', size: 16 }) %> Print / Report</a>
-          <a class="btn btn-ghost btn-sm" href="/admin/reports/orders.pdf?download=1"><%- include('../partials/icon', { name: 'download', size: 16 }) %> PDF</a>
-          <a class="btn btn-ghost btn-sm" href="/admin/reports/orders.xlsx"><%- include('../partials/icon', { name: 'download', size: 16 }) %> Excel</a>
+      <div class="dash-main-head">
+        <div>
+          <h1><%= { orders:'Orders', categories:'Categories', products:'Products', partners:'Partner Applications', users:'Users' }[activeTab] || 'Admin Dashboard' %></h1>
+          <p class="muted">Manage your RocketDrop platform</p>
+        </div>
+        <div class="stats-inline">
+          <span><strong><%= stats.orders %></strong> orders</span>
+          <span><strong><%= stats.products %></strong> products</span>
+          <span><strong>UGX <%= stats.revenue.toLocaleString() %></strong> revenue</span>
         </div>
       </div>
 
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>#</th><th>Item</th><th>Customer</th><th>Qty</th><th>Total (UGX)</th>
-              <th>Payment</th><th>Status</th><th>Delivery Man</th><th class="t-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% if (orders.length === 0) { %>
-              <tr><td colspan="9" class="t-empty">No orders yet.</td></tr>
-            <% } %>
-            <% orders.forEach((order) => { %>
-              <% const pay = order.payment || { method: 'cod', status: 'unpaid', phone: null }; %>
-              <% const payMethod = paymentMethods[pay.method] || paymentMethods.cod; %>
-              <tr>
-                <td><%= order.id %></td>
-                <td><strong><%= order.item %></strong></td>
-                <td>
-                  <%= order.userName %><br />
-                  <small class="t-muted"><%= order.userEmail %></small>
-                </td>
-                <td><%= order.quantity %></td>
-                <td><%= Number(order.total).toLocaleString() %></td>
-                <td>
-                  <span class="pay-chip pay-<%= pay.method %>"><%= payMethod.label %></span><br />
-                  <span class="badge badge-pay-<%= pay.status %>"><%= paymentStatusLabels[pay.status] || pay.status %></span>
-                  <% if (pay.status === 'awaiting_confirmation') { %>
-                    <form method="POST" action="/admin/orders/<%= order.id %>/confirm-payment" class="inline" data-confirm="Confirm this payment? The customer will be notified.">
-                      <button type="submit" class="btn btn-success btn-sm">Confirm Payment</button>
-                    </form>
-                  <% } %>
-                </td>
-                <td><span class="badge badge-<%= order.status %>"><%= statusLabels[order.status] %></span></td>
-                <td>
-                  <% if (order.deliveryMan) { %>
-                    <strong><%= order.deliveryMan.name %></strong><br />
-                    <small class="t-muted"><%= order.deliveryMan.phone %><% if (order.deliveryMan.location) { %> · <%= order.deliveryMan.location %><% } %></small>
-                  <% } else { %>
-                    <span class="t-muted">—</span>
-                  <% } %>
-                </td>
-                <td class="t-right t-actions">
-                  <% if (order.status === 'pending') { %>
-                    <button type="button" class="btn btn-success btn-sm" data-approve-order data-payload="<%= jsonAttr({ id: order.id, item: order.item }) %>">Approve</button>
-                    <button type="button" class="btn btn-danger btn-sm" data-reject-order data-payload="<%= jsonAttr({ id: order.id, item: order.item }) %>">Reject</button>
-                  <% } else if (order.status !== 'rejected' && order.status !== 'delivered') { %>
-                    <form method="POST" action="/admin/orders/<%= order.id %>/stage" class="inline stage-form">
-                      <select name="status" class="select-sm">
-                        <option value="preparing" <%= order.status === 'preparing' ? 'selected' : '' %>>Preparing</option>
-                        <option value="out_for_delivery" <%= order.status === 'out_for_delivery' ? 'selected' : '' %>>Out for Delivery</option>
-                        <option value="delivered">Delivered</option>
-                      </select>
-                      <button type="submit" class="btn btn-ghost btn-sm">Update Stage</button>
-                    </form>
-                  <% } %>
-                  <button type="button" class="btn btn-ghost btn-sm"
-                    data-edit-order
-                    data-payload="<%= jsonAttr({ id: order.id, quantity: order.quantity, address: order.address || '' }) %>">Edit</button>
-                  <form method="POST" action="/admin/orders/<%= order.id %>/delete" class="inline" data-confirm="Delete order #<%= order.id %>?">
-                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                  </form>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-    </section>
+      <%- include('../partials/dash/orders-panel', { orders, statusLabels, paymentMethods, paymentStatusLabels, activeTab }) %>
+      <%- include('../partials/dash/categories-panel', { categories, basePath: '/admin', activeTab }) %>
+      <%- include('../partials/dash/products-panel', { products, categories, basePath: '/admin', activeTab }) %>
+      <%- include('../partials/dash/partners-panel', { partners, activeTab }) %>
 
-    <!-- CATEGORIES + PRODUCTS PANELS (shared partials) -->
-    <%- include('../partials/dash/categories-panel', { categories, basePath: '/admin', activeTab }) %>
-    <%- include('../partials/dash/products-panel', { products, categories, basePath: '/admin', activeTab }) %>
-
-    <!-- PARTNERS PANEL -->
-    <section class="panel <%= activeTab === 'partners' ? 'active' : '' %>" id="partners">
-      <div class="panel-head"><h2>Partner Applications</h2></div>
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr><th>#</th><th>Business</th><th>Applicant</th><th>Type</th><th>Contact</th><th>Location</th><th>Status</th><th class="t-right">Actions</th></tr>
-          </thead>
-          <tbody>
-            <% if (partners.length === 0) { %>
-              <tr><td colspan="8" class="t-empty">No partner applications yet.</td></tr>
-            <% } %>
-            <% partners.forEach((p) => { %>
-              <tr>
-                <td><%= p.id %></td>
-                <td><strong><%= p.businessName %></strong></td>
-                <td><%= p.applicantName %></td>
-                <td class="t-muted"><%= p.businessType %></td>
-                <td><%= p.email %><br /><small class="t-muted"><%= p.phone %></small></td>
-                <td class="t-muted"><%= p.location || '—' %></td>
-                <td><span class="badge badge-partner-<%= p.status %>"><%= p.status.charAt(0).toUpperCase() + p.status.slice(1) %></span></td>
-                <td class="t-right t-actions">
-                  <% if (p.status === 'pending') { %>
-                    <form method="POST" action="/admin/partners/<%= p.id %>/approve" class="inline" data-confirm="Approve this partner application? They will be notified and gain dashboard access.">
-                      <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                    </form>
-                    <button type="button" class="btn btn-danger btn-sm" data-reject-partner data-payload="<%= jsonAttr({ id: p.id, name: p.businessName }) %>">Reject</button>
-                  <% } else if (p.status === 'approved') { %>
-                    <button type="button" class="btn btn-danger btn-sm" data-reject-partner data-payload="<%= jsonAttr({ id: p.id, name: p.businessName }) %>">Revoke</button>
-                  <% } else { %>
-                    <form method="POST" action="/admin/partners/<%= p.id %>/approve" class="inline" data-confirm="Approve this partner application?">
-                      <button type="submit" class="btn btn-success btn-sm">Approve</button>
-                    </form>
-                  <% } %>
-                </td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- USERS PANEL -->
-    <section class="panel <%= activeTab === 'users' ? 'active' : '' %>" id="users">
-      <div class="panel-head"><h2>Users</h2></div>
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr><th>#</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Joined</th></tr>
-          </thead>
-          <tbody>
-            <% users.forEach((u) => { %>
-              <tr>
-                <td><%= u.id %></td>
-                <td><strong><%= u.fullName %></strong></td>
-                <td><%= u.email %></td>
-                <td><%= u.phone %></td>
-                <td><span class="badge badge-role-<%= u.role %>"><%= u.role %></span></td>
-                <td class="t-muted"><%= new Date(u.createdAt).toLocaleDateString('en-UG') %></td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </main>
+      <section class="panel <%= activeTab === 'users' ? 'active' : '' %>" id="users">
+        <div class="panel-head"><h2>Users</h2></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>#</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Joined</th></tr>
+            </thead>
+            <tbody>
+              <% users.forEach((u) => { %>
+                <tr>
+                  <td><%= u.id %></td>
+                  <td><strong><%= u.fullName %></strong></td>
+                  <td><%= u.email %></td>
+                  <td><%= u.phone %></td>
+                  <td><span class="badge badge-role-<%= u.role %>"><%= u.role %></span></td>
+                  <td class="t-muted"><%= new Date(u.createdAt).toLocaleDateString('en-UG') %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
 
   <!-- CREATE ORDER MODAL -->
-  <dialog class="modal" id="createOrderModal">
-    <form method="POST" action="/admin/orders" class="modal-card">
+  <div class="modern-modal" id="createOrderModal" hidden>
+    <div class="modern-modal-backdrop" data-close-modal></div>
+    <div class="modern-modal-card">
       <button type="button" class="modal-close" data-close-modal>&times;</button>
-      <h3>New Order</h3>
-      <label class="field"><span>Customer Email</span>
-        <input type="email" name="userEmail" list="userEmails" placeholder="customer@example.com" required />
-        <datalist id="userEmails">
-          <% users.filter(u => u.role !== 'admin').forEach((u) => { %><option value="<%= u.email %>"><%= u.fullName %></option><% }) %>
-        </datalist>
-      </label>
-      <label class="field"><span>Product</span>
-        <select name="productId" required>
-          <% products.forEach((p) => { %><option value="<%= p.id %>"><%= p.name %> — UGX <%= Number(p.price).toLocaleString() %></option><% }) %>
-        </select>
-      </label>
-      <label class="field"><span>Quantity</span><input type="number" name="quantity" value="1" min="1" required /></label>
-      <label class="field"><span>Delivery Address</span><input type="text" name="address" /></label>
-      <label class="field"><span>Payment Method</span>
-        <select name="paymentMethod">
-          <option value="cod">Cash on Delivery</option>
-          <option value="airtel">Airtel Money</option>
-          <option value="mtn">MTN Mobile Money</option>
-        </select>
-      </label>
-      <button type="submit" class="btn btn-primary btn-block">Create Order</button>
-    </form>
-  </dialog>
-
-  <!-- EDIT ORDER MODAL -->
-  <dialog class="modal" id="editOrderModal">
-    <form method="POST" action="" class="modal-card" id="editOrderForm" data-action-template="/admin/orders/{id}/update">
-      <button type="button" class="modal-close" data-close-modal>&times;</button>
-      <h3>Edit Order</h3>
-      <label class="field"><span>Quantity</span><input type="number" name="quantity" min="1" required /></label>
-      <label class="field"><span>Delivery Address</span><input type="text" name="address" /></label>
-      <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
-    </form>
-  </dialog>
-
-  <!-- APPROVE ORDER MODAL -->
-  <dialog class="modal" id="approveOrderModal">
-    <form method="POST" action="" class="modal-card" id="approveOrderForm" data-action-template="/admin/orders/{id}/approve">
-      <button type="button" class="modal-close" data-close-modal>&times;</button>
-      <h3>Approve Order <span id="approveOrderItem" class="t-muted"></span></h3>
-      <p class="muted">The customer will receive a notification with the delivery man's full name, contact and location.</p>
-      <label class="field"><span>Delivery Man — Full Name</span><input type="text" name="deliveryName" placeholder="e.g. Musa Kintu" required /></label>
-      <label class="field"><span>Delivery Man — Contact</span><input type="tel" name="deliveryPhone" placeholder="07XXXXXXXX" required /></label>
-      <label class="field"><span>Delivery Man — Location</span><input type="text" name="deliveryLocation" placeholder="e.g. Kampala Central" /></label>
-      <button type="submit" class="btn btn-success btn-block">Approve &amp; Notify Customer</button>
-    </form>
-  </dialog>
-
-  <!-- REJECT ORDER MODAL -->
-  <dialog class="modal" id="rejectOrderModal">
-    <form method="POST" action="" class="modal-card" id="rejectOrderForm" data-action-template="/admin/orders/{id}/reject">
-      <button type="button" class="modal-close" data-close-modal>&times;</button>
-      <h3>Reject Order <span id="rejectOrderItem" class="t-muted"></span></h3>
-      <label class="field"><span>Reason (optional)</span><input type="text" name="reason" placeholder="e.g. Item out of stock" /></label>
-      <button type="submit" class="btn btn-danger btn-block">Reject &amp; Notify Customer</button>
-    </form>
-  </dialog>
-
-  <!-- REJECT PARTNER MODAL -->
-  <dialog class="modal" id="rejectPartnerModal">
-    <form method="POST" action="" class="modal-card" id="rejectPartnerForm" data-action-template="/admin/partners/{id}/reject">
-      <button type="button" class="modal-close" data-close-modal>&times;</button>
-      <h3>Decline Partner <span id="rejectPartnerName" class="t-muted"></span></h3>
-      <label class="field"><span>Reason (optional)</span><input type="text" name="reason" placeholder="e.g. Incomplete business details" /></label>
-      <button type="submit" class="btn btn-danger btn-block">Decline &amp; Notify Applicant</button>
-    </form>
-  </dialog>
+      <form method="POST" action="/admin/orders">
+        <h3>New Order</h3>
+        <label class="field"><span>Customer Email</span>
+          <input type="email" name="userEmail" list="userEmails" placeholder="customer@example.com" required />
+          <datalist id="userEmails">
+            <% users.filter(u => u.role !== 'admin').forEach((u) => { %><option value="<%= u.email %>"><%= u.fullName %></option><% }) %>
+          </datalist>
+        </label>
+        <label class="field"><span>Product</span>
+          <select name="productId" required>
+            <% products.forEach((p) => { %><option value="<%= p.id %>"><%= p.name %> — UGX <%= Number(p.price).toLocaleString() %></option><% }) %>
+          </select>
+        </label>
+        <label class="field"><span>Quantity</span><input type="number" name="quantity" value="1" min="1" required /></label>
+        <label class="field"><span>Delivery Address</span><input type="text" name="address" /></label>
+        <label class="field"><span>Payment Method</span>
+          <select name="paymentMethod">
+            <option value="cod">Cash on Delivery</option>
+            <option value="airtel">Airtel Money</option>
+            <option value="mtn">MTN Mobile Money</option>
+          </select>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Create Order</button>
+      </form>
+    </div>
+  </div>
 
   <%- include('../partials/footer') %>
   <script src="/js/dashboard.js"></script>

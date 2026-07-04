@@ -28,8 +28,18 @@ function partnerPayload(body, user) {
 }
 
 exports.applyPage = (req, res) => {
-  const existing = db.findOne("partners", (p) => p.userId === req.session.user.id);
-  res.render("partner/apply", { title: "Become a Partner", application: existing });
+  const application = db.findOne("partners", (p) => p.userId === req.session.user.id);
+
+  if (application && application.status === "approved") {
+    const user = db.findById("users", req.session.user.id);
+    if (user && user.role !== "partner") {
+      db.update("users", user.id, { role: "partner", partnerId: application.id });
+    }
+    req.session.user.role = "partner";
+    req.session.user.partnerId = application.id;
+  }
+
+  res.render("partner/apply", { title: "Become a Partner", application });
 };
 
 exports.apply = (req, res) => {

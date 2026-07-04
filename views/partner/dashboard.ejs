@@ -6,92 +6,78 @@
 <body class="dash-body">
   <%- include('../partials/header') %>
 
-  <main class="container section fade-in">
-    <div class="dash-head">
-      <div>
-        <h1><%= partner.businessName %></h1>
-        <p class="muted">Partner Dashboard · <%= partner.businessType %> · <%= partner.location || 'Uganda' %></p>
-      </div>
-      <span class="badge badge-partner-approved">Approved Partner</span>
-    </div>
+  <div class="dash-shell">
+    <%- include('../partials/dash/sidebar', {
+      sidebarTitle: partner.businessName,
+      activeTab,
+      items: [
+        { id: 'orders', href: '/partner/dashboard?tab=orders', icon: 'order', label: 'Orders', badge: stats.pending || null },
+        { id: 'categories', href: '/partner/dashboard?tab=categories', icon: 'search', label: 'Categories' },
+        { id: 'products', href: '/partner/dashboard?tab=products', icon: 'delivery', label: 'Products' }
+      ]
+    }) %>
 
-    <!-- NOTIFICATION BAR -->
-    <% if (stats.pending > 0) { %>
-      <div class="notif-bar slide-up">
-        <span class="notif-bar-icon"><%- include('../partials/icon', { name: 'bell', size: 22 }) %></span>
-        <div class="notif-bar-items">
-          <a href="#orders" data-tab-link="orders"><strong><%= stats.pending %></strong> order<%= stats.pending > 1 ? 's' : '' %> waiting for admin approval</a>
+    <div class="dash-main">
+      <div class="dash-main-head">
+        <div>
+          <h1><%= partner.businessName %></h1>
+          <p class="muted"><%= partner.businessType %> · <%= partner.city || 'Uganda' %> · <%= partner.location %></p>
         </div>
+        <span class="badge badge-partner-approved">Approved Partner</span>
       </div>
-    <% } %>
 
-    <!-- STATS -->
-    <div class="stats-grid">
-      <div class="stat-card reveal"><span class="stat-value"><%= stats.orders %></span><span class="stat-label">Orders</span></div>
-      <div class="stat-card reveal"><span class="stat-value"><%= stats.products %></span><span class="stat-label">Products</span></div>
-      <div class="stat-card reveal"><span class="stat-value"><%= stats.categories %></span><span class="stat-label">Categories</span></div>
-      <div class="stat-card stat-accent reveal"><span class="stat-value">UGX <%= stats.revenue.toLocaleString() %></span><span class="stat-label">Revenue</span></div>
-    </div>
+      <% if (stats.pending > 0) { %>
+        <div class="notif-bar slide-up">
+          <span class="notif-bar-icon"><%- include('../partials/icon', { name: 'bell', size: 22 }) %></span>
+          <div class="notif-bar-items">
+            <a href="/partner/dashboard?tab=orders"><strong><%= stats.pending %></strong> order<%= stats.pending > 1 ? 's' : '' %> awaiting admin approval</a>
+          </div>
+        </div>
+      <% } %>
 
-    <!-- TABS -->
-    <nav class="dash-tabs">
-      <button type="button" data-tab="orders" class="<%= activeTab === 'orders' ? 'active' : '' %>">Orders <% if (stats.pending > 0) { %><span class="tab-badge"><%= stats.pending %></span><% } %></button>
-      <button type="button" data-tab="categories" class="<%= activeTab === 'categories' ? 'active' : '' %>">Categories</button>
-      <button type="button" data-tab="products" class="<%= activeTab === 'products' ? 'active' : '' %>">Products</button>
-    </nav>
-
-    <section class="panel <%= activeTab === 'orders' ? 'active' : '' %>" id="orders">
-      <div class="panel-head"><h2>Your Orders</h2></div>
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr><th>#</th><th>Item</th><th>Customer</th><th>Qty</th><th>Total (UGX)</th><th>Payment</th><th>Status</th><th class="t-right">Actions</th></tr>
-          </thead>
-          <tbody>
-            <% if (orders.length === 0) { %>
-              <tr><td colspan="8" class="t-empty">No orders on your products yet.</td></tr>
-            <% } %>
+      <section class="panel <%= activeTab === 'orders' ? 'active' : '' %>" id="orders">
+        <div class="panel-head"><h2>Your Orders</h2></div>
+        <% if (orders.length === 0) { %>
+          <div class="empty-state"><p>No orders on your products yet.</p></div>
+        <% } else { %>
+          <div class="order-cards">
             <% orders.forEach((order) => { %>
               <% const pay = order.payment || { method: 'cod', status: 'unpaid' }; %>
               <% const payMethod = paymentMethods[pay.method] || paymentMethods.cod; %>
-              <tr>
-                <td><%= order.id %></td>
-                <td><strong><%= order.item %></strong></td>
-                <td><%= order.userName %><br /><small class="t-muted"><%= order.userEmail %></small></td>
-                <td><%= order.quantity %></td>
-                <td><%= Number(order.total).toLocaleString() %></td>
-                <td>
-                  <span class="pay-chip pay-<%= pay.method %>"><%= payMethod.label %></span><br />
-                  <span class="badge badge-pay-<%= pay.status %>"><%= paymentStatusLabels[pay.status] || pay.status %></span>
-                </td>
-                <td><span class="badge badge-<%= order.status %>"><%= statusLabels[order.status] %></span></td>
-                <td class="t-right t-actions">
-                  <% if (order.status === 'pending') { %>
-                    <span class="t-muted">Awaiting admin approval</span>
-                  <% } else if (order.status !== 'rejected' && order.status !== 'delivered') { %>
-                    <form method="POST" action="/partner/orders/<%= order.id %>/stage" class="inline stage-form">
-                      <select name="status" class="select-sm">
-                        <option value="preparing" <%= order.status === 'preparing' ? 'selected' : '' %>>Preparing</option>
-                        <option value="out_for_delivery" <%= order.status === 'out_for_delivery' ? 'selected' : '' %>>Out for Delivery</option>
-                        <option value="delivered">Delivered</option>
-                      </select>
-                      <button class="btn btn-ghost btn-sm">Update Stage</button>
-                    </form>
-                  <% } else { %>
-                    <span class="t-muted">—</span>
-                  <% } %>
-                </td>
-              </tr>
+              <article class="order-card card">
+                <div class="order-card-top">
+                  <div>
+                    <h3>#<%= order.id %> · <%= order.item %></h3>
+                    <p class="muted"><%= order.userName %> · <%= order.userEmail %></p>
+                  </div>
+                  <span class="badge badge-<%= order.status %>"><%= statusLabels[order.status] %></span>
+                </div>
+                <div class="order-card-pills">
+                  <span class="pay-chip pay-<%= pay.method %>"><%= payMethod.label %></span>
+                  <strong class="price">UGX <%= Number(order.total).toLocaleString() %></strong>
+                </div>
+                <% if (order.status === 'pending') { %>
+                  <p class="action-hint muted">Waiting for admin to confirm payment and approve this order.</p>
+                <% } else if (order.status !== 'rejected' && order.status !== 'delivered') { %>
+                  <form method="POST" action="/partner/orders/<%= order.id %>/stage" class="inline stage-form">
+                    <select name="status" class="select-sm">
+                      <option value="preparing" <%= order.status === 'preparing' ? 'selected' : '' %>>Preparing</option>
+                      <option value="out_for_delivery" <%= order.status === 'out_for_delivery' ? 'selected' : '' %>>Out for Delivery</option>
+                      <option value="delivered">Delivered</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary btn-sm">Update Stage</button>
+                  </form>
+                <% } %>
+              </article>
             <% }) %>
-          </tbody>
-        </table>
-      </div>
-    </section>
+          </div>
+        <% } %>
+      </section>
 
-    <!-- CATEGORIES + PRODUCTS PANELS (shared partials) -->
-    <%- include('../partials/dash/categories-panel', { categories, basePath: '/partner', activeTab }) %>
-    <%- include('../partials/dash/products-panel', { products, categories, basePath: '/partner', activeTab }) %>
-  </main>
+      <%- include('../partials/dash/categories-panel', { categories, basePath: '/partner', activeTab }) %>
+      <%- include('../partials/dash/products-panel', { products, categories, basePath: '/partner', activeTab }) %>
+    </div>
+  </div>
 
   <%- include('../partials/footer') %>
   <script src="/js/dashboard.js"></script>
