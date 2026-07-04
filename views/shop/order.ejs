@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container section fade-in">
+    <nav class="breadcrumbs">
+      <a href="/">Home</a> <span>/</span>
+      <% if (category) { %><a href="/categories/<%= category.id %>"><%= category.name %></a> <span>/</span><% } %>
+      <strong><%= product.name %></strong>
+    </nav>
+
+    <div class="order-layout">
+      <div class="order-product card">
+        <div class="card-media tall"><img src="<%= product.image %>" alt="<%= product.name %>" /></div>
+        <div class="card-body">
+          <h1><%= product.name %></h1>
+          <p class="muted"><%= product.description %></p>
+          <p class="price price-lg">UGX <%= Number(product.price).toLocaleString() %></p>
+        </div>
+      </div>
+
+      <form method="POST" action="/orders/new/<%= product.id %>" class="order-form card">
+        <div class="card-body">
+          <h2>Checkout</h2>
+
+          <label class="field">
+            <span>Quantity</span>
+            <input type="number" name="quantity" id="orderQty" value="1" min="1" max="50" required />
+          </label>
+
+          <label class="field">
+            <span>Delivery Address</span>
+            <input type="text" name="address" placeholder="e.g. Kampala, Ntinda — Plot 12" required />
+          </label>
+
+          <div class="field">
+            <span>Payment Method</span>
+            <div class="pay-options">
+              <% paymentMethods.forEach((m, i) => { %>
+                <label class="pay-option pay-option-<%= m.key %>">
+                  <input type="radio" name="paymentMethod" value="<%= m.key %>" <%= i === 0 ? 'checked' : '' %> />
+                  <span class="pay-option-card">
+                    <span class="pay-dot"></span>
+                    <span><%= m.label %></span>
+                  </span>
+                </label>
+              <% }) %>
+            </div>
+          </div>
+
+          <label class="field" id="paymentPhoneField">
+            <span>Mobile Money Number</span>
+            <input type="tel" name="paymentPhone" id="paymentPhone" placeholder="07XXXXXXXX" pattern="[0-9+]{9,15}" />
+            <small class="muted">You will pay from this number. Our admin confirms the payment and you get a notification.</small>
+          </label>
+
+          <div class="order-total">
+            <span>Total</span>
+            <strong id="orderTotal" data-unit="<%= product.price %>">UGX <%= Number(product.price).toLocaleString() %></strong>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg">Place Order</button>
+          <p class="auth-hint">Your order goes to our team for approval. Once approved, we send you the delivery man's name, contact and location.</p>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container section fade-in">
+    <nav class="breadcrumbs"><a href="/">Home</a> <span>/</span> <strong><%= category.name %></strong></nav>
+
+    <div class="category-hero" style="background-image: url('<%= category.image %>')">
+      <div class="category-hero-overlay">
+        <h1><%= category.name %></h1>
+        <p><%= category.description %></p>
+      </div>
+    </div>
+
+    <% if (products.length === 0) { %>
+      <div class="empty-state">
+        <p>No products in this category yet. Check back soon!</p>
+        <a href="/" class="btn btn-ghost">Back to Home</a>
+      </div>
+    <% } else { %>
+      <div class="grid grid-4">
+        <% products.forEach((product, i) => { %>
+          <div class="card product-card reveal" style="--d: <%= (i % 8) * 0.06 %>s">
+            <div class="card-media"><img src="<%= product.image %>" alt="<%= product.name %>" loading="lazy" /></div>
+            <div class="card-body">
+              <h3><%= product.name %></h3>
+              <p class="price">UGX <%= Number(product.price).toLocaleString() %></p>
+              <% if (currentUser) { %>
+                <a href="/orders/new/<%= product.id %>" class="btn btn-primary btn-block">Order Now</a>
+              <% } else { %>
+                <a href="/auth/login" class="btn btn-primary btn-block">Sign in to Order</a>
+              <% } %>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

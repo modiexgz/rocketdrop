@@ -1,0 +1,67 @@
+<section class="panel <%= activeTab === 'partners' ? 'active' : '' %>" id="partners">
+  <div class="panel-head">
+    <h2>Partner Applications</h2>
+    <p class="muted"><%= partners.length %> application(s) · <%= partners.filter(p => p.status === 'pending').length %> pending review</p>
+  </div>
+
+  <% if (partners.length === 0) { %>
+    <div class="empty-state"><p>No partner applications yet. Users apply from the Become a Partner page.</p></div>
+  <% } %>
+
+  <div class="partner-cards">
+    <% partners.forEach((p) => { %>
+      <article class="partner-app-card card">
+        <div class="partner-app-head">
+          <div>
+            <h3><%= p.businessName %></h3>
+            <p class="muted"><%= p.businessType %> · Applicant: <%= p.applicantName || '—' %></p>
+          </div>
+          <span class="badge badge-partner-<%= p.status %>"><%= p.status.charAt(0).toUpperCase() + p.status.slice(1) %></span>
+        </div>
+
+        <div class="partner-app-grid">
+          <div><strong>Email</strong><span><%= p.email %></span></div>
+          <div><strong>Phone</strong><span><%= p.phone %></span></div>
+          <div><strong>Owner</strong><span><%= p.ownerName || '—' %></span></div>
+          <div><strong>Owner Phone</strong><span><%= p.ownerPhone || '—' %></span></div>
+          <div><strong>City</strong><span><%= p.city || '—' %></span></div>
+          <div><strong>District</strong><span><%= p.district || '—' %></span></div>
+          <div class="span-2"><strong>Address</strong><span><%= p.location || '—' %></span></div>
+          <% if (p.description) { %><div class="span-2"><strong>Description</strong><span><%= p.description %></span></div><% } %>
+          <% if (p.openingHours) { %><div><strong>Hours</strong><span><%= p.openingHours %></span></div><% } %>
+          <% if (p.registrationNumber) { %><div><strong>Reg / TIN</strong><span><%= p.registrationNumber %></span></div><% } %>
+          <% if (p.website) { %><div class="span-2"><strong>Website</strong><span><%= p.website %></span></div><% } %>
+          <div><strong>Applied</strong><span><%= new Date(p.createdAt).toLocaleString('en-UG') %></span></div>
+        </div>
+
+        <div class="partner-app-actions">
+          <% if (p.status === 'pending') { %>
+            <form method="POST" action="/admin/partners/<%= p.id %>/approve" class="inline" data-confirm="Approve <%= p.businessName %> as a partner? They will be notified immediately.">
+              <button type="submit" class="btn btn-success btn-sm">Approve Partner</button>
+            </form>
+            <details class="action-details">
+              <summary class="btn btn-danger btn-sm">Decline</summary>
+              <form method="POST" action="/admin/partners/<%= p.id %>/reject" class="inline-action-form stack-form">
+                <label class="field"><span>Reason (optional)</span><input type="text" name="reason" placeholder="e.g. Incomplete details" /></label>
+                <button type="submit" class="btn btn-danger btn-sm">Decline &amp; Notify</button>
+              </form>
+            </details>
+          <% } else if (p.status === 'approved') { %>
+            <span class="badge badge-partner-approved">Active Partner</span>
+            <details class="action-details">
+              <summary class="btn btn-danger btn-sm">Revoke</summary>
+              <form method="POST" action="/admin/partners/<%= p.id %>/reject" class="inline-action-form stack-form">
+                <label class="field"><span>Reason (optional)</span><input type="text" name="reason" /></label>
+                <button type="submit" class="btn btn-danger btn-sm">Revoke Access</button>
+              </form>
+            </details>
+          <% } else { %>
+            <form method="POST" action="/admin/partners/<%= p.id %>/approve" class="inline" data-confirm="Approve this partner application?">
+              <button type="submit" class="btn btn-success btn-sm">Approve</button>
+            </form>
+          <% } %>
+        </div>
+      </article>
+    <% }) %>
+  </div>
+</section>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body class="auth-body">
+  <%- include('../partials/header') %>
+
+  <main class="auth-page">
+    <div class="auth-card slide-up">
+      <div class="auth-logo"><%- include('../partials/logo') %></div>
+      <h1>Create your account</h1>
+      <p class="auth-sub">Join RocketDrop and get fast delivery to your door.</p>
+
+      <form method="POST" action="/auth/register" class="form">
+        <label class="field">
+          <span>Full Name</span>
+          <input type="text" name="fullName" placeholder="Jane Doe" pattern="[A-Za-z ]+" title="Letters only" required autofocus />
+        </label>
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" placeholder="you@example.com" required />
+        </label>
+        <label class="field">
+          <span>Phone</span>
+          <input type="tel" name="phone" placeholder="07XXXXXXXX" pattern="[0-9+]{9,15}" title="9–15 digits" required />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input type="password" name="password" placeholder="At least 6 characters" minlength="6" required />
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+      </form>
+
+      <p class="auth-alt">Already have an account? <a href="/auth/login">Sign in</a></p>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

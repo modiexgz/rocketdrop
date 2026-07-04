@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container section fade-in">
+    <div class="section-head">
+      <h1>Become a Partner</h1>
+      <p>Restaurants, shops and pharmacies — join RocketDrop and reach more customers across Uganda.</p>
+    </div>
+
+    <% if (application && application.status === 'pending') { %>
+      <div class="status-card card slide-up">
+        <img src="/icons/pending.svg" alt="" class="status-icon" />
+        <h2>Application under review</h2>
+        <p>Your application for <strong><%= application.businessName %></strong> was submitted on
+          <%= new Date(application.createdAt).toLocaleDateString('en-UG') %>.
+          Our team is reviewing it — you will receive a notification once it is approved or declined.</p>
+        <span class="badge badge-pending">Pending Review</span>
+      </div>
+    <% } else if (application && application.status === 'approved') { %>
+      <div class="status-card card slide-up">
+        <img src="/icons/success.svg" alt="" class="status-icon" />
+        <h2>You are an approved partner</h2>
+        <p><strong><%= application.businessName %></strong> is live on RocketDrop.</p>
+        <a href="/partner/dashboard" class="btn btn-primary">Open Partner Dashboard</a>
+        <p class="auth-hint muted">You can manage your categories, products and orders from your partner dashboard.</p>
+      </div>
+    <% } else { %>
+      <% if (application && application.status === 'rejected') { %>
+        <div class="callout callout-error slide-up">
+          Your previous application for <strong><%= application.businessName %></strong> was declined.
+          You can update your details and apply again below.
+        </div>
+      <% } %>
+
+      <div class="order-layout partner-apply-layout">
+        <div class="card partner-pitch">
+          <div class="card-body">
+            <h2>Why partner with RocketDrop?</h2>
+            <ul class="check-list">
+              <li>Your own partner dashboard</li>
+              <li>Create and manage your own categories</li>
+              <li>Add unlimited products to your menu</li>
+              <li>Track and update customer orders</li>
+              <li>Payments via Airtel Money and MTN MoMo</li>
+            </ul>
+            <p class="auth-hint">After you apply, the admin reviews your application. You will get a notification whether you are approved or not.</p>
+          </div>
+        </div>
+
+        <form method="POST" action="/partner/apply" class="card order-form partner-form">
+          <div class="card-body">
+            <h2>Partner Application</h2>
+            <p class="muted">Tell us about your business. All fields marked with * are required.</p>
+
+            <h3 class="form-section-title">Business details</h3>
+            <label class="field">
+              <span>Business Name *</span>
+              <input type="text" name="businessName" placeholder="e.g. Mama's Kitchen" required value="<%= application ? application.businessName : '' %>" />
+            </label>
+            <label class="field">
+              <span>Business Type *</span>
+              <select name="businessType" required>
+                <% ['Restaurant', 'Grocery Shop', 'Pharmacy', 'Fashion Store', 'Cafe', 'Bakery', 'Other'].forEach((t) => { %>
+                  <option <%= application && application.businessType === t ? 'selected' : '' %>><%= t %></option>
+                <% }) %>
+              </select>
+            </label>
+            <label class="field">
+              <span>Business Description *</span>
+              <textarea name="description" rows="3" placeholder="What do you sell? What makes your business special?" required><%= application ? (application.description || '') : '' %></textarea>
+            </label>
+            <label class="field">
+              <span>Registration / TIN Number</span>
+              <input type="text" name="registrationNumber" placeholder="Optional business registration number" value="<%= application ? (application.registrationNumber || '') : '' %>" />
+            </label>
+            <label class="field">
+              <span>Opening Hours</span>
+              <input type="text" name="openingHours" placeholder="e.g. Mon–Sat 8am – 10pm" value="<%= application ? (application.openingHours || '') : '' %>" />
+            </label>
+            <label class="field">
+              <span>Website / Social Media</span>
+              <input type="url" name="website" placeholder="https://instagram.com/yourbusiness" value="<%= application ? (application.website || '') : '' %>" />
+            </label>
+
+            <h3 class="form-section-title">Contact &amp; location</h3>
+            <label class="field">
+              <span>Business Email *</span>
+              <input type="email" name="businessEmail" placeholder="business@example.com" required value="<%= application ? application.email : '' %>" />
+            </label>
+            <label class="field">
+              <span>Business Phone *</span>
+              <input type="tel" name="businessPhone" placeholder="07XXXXXXXX" pattern="[0-9+]{9,15}" required value="<%= application ? application.phone : '' %>" />
+            </label>
+            <label class="field">
+              <span>Owner / Manager Name *</span>
+              <input type="text" name="ownerName" placeholder="Full name of business owner" required value="<%= application ? (application.ownerName || currentUser.fullName) : currentUser.fullName %>" />
+            </label>
+            <label class="field">
+              <span>Owner Phone *</span>
+              <input type="tel" name="ownerPhone" placeholder="07XXXXXXXX" pattern="[0-9+]{9,15}" required value="<%= application ? (application.ownerPhone || currentUser.phone) : currentUser.phone %>" />
+            </label>
+            <div class="field-row">
+              <label class="field">
+                <span>City *</span>
+                <input type="text" name="city" placeholder="Kampala" required value="<%= application ? (application.city || 'Kampala') : 'Kampala' %>" />
+              </label>
+              <label class="field">
+                <span>District *</span>
+                <input type="text" name="district" placeholder="e.g. Kampala Central" required value="<%= application ? (application.district || '') : '' %>" />
+              </label>
+            </div>
+            <label class="field">
+              <span>Full Business Address *</span>
+              <input type="text" name="location" placeholder="Street, building, landmark" required value="<%= application ? (application.location || '') : '' %>" />
+            </label>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg">Submit Application</button>
+          </div>
+        </form>
+      </div>
+    <% } %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

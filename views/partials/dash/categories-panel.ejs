@@ -1,0 +1,55 @@
+<section class="panel <%= typeof activeTab !== 'undefined' && activeTab === 'categories' ? 'active' : '' %>" id="categories">
+  <div class="panel-head">
+    <h2>Categories</h2>
+    <button type="button" class="btn btn-primary btn-sm" data-open-modal="createCategoryModal">+ New Category</button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Image</th><th>Name</th><th>Description</th><th class="t-right">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% if (categories.length === 0) { %>
+          <tr><td colspan="5" class="t-empty">No categories yet — create your first one.</td></tr>
+        <% } %>
+        <% categories.forEach((cat) => { %>
+          <tr>
+            <td><%= cat.id %></td>
+            <td><img src="<%= cat.image %>" alt="" class="table-thumb" /></td>
+            <td><strong><%= cat.name %></strong></td>
+            <td class="t-muted"><%= cat.description %></td>
+            <td class="t-right">
+              <details class="action-details table-details">
+                <summary class="btn btn-ghost btn-sm">Edit</summary>
+                <form method="POST" action="<%= basePath %>/categories/<%= cat.id %>/update" class="inline-action-form stack-form">
+                  <label class="field"><span>Name</span><input type="text" name="name" value="<%= cat.name %>" required /></label>
+                  <label class="field"><span>Description</span><input type="text" name="description" value="<%= cat.description || '' %>" /></label>
+                  <label class="field"><span>Image URL</span><input type="text" name="image" value="<%= cat.image || '' %>" /></label>
+                  <button type="submit" class="btn btn-primary btn-sm">Save</button>
+                </form>
+              </details>
+              <form method="POST" action="<%= basePath %>/categories/<%= cat.id %>/delete" class="inline" data-confirm="Delete this category?">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="modern-modal" id="createCategoryModal" hidden>
+  <div class="modern-modal-backdrop" data-close-modal></div>
+  <div class="modern-modal-card">
+    <button type="button" class="modal-close" data-close-modal>&times;</button>
+    <form method="POST" action="<%= basePath %>/categories">
+      <h3>New Category</h3>
+      <label class="field"><span>Name</span><input type="text" name="name" required /></label>
+      <label class="field"><span>Description</span><input type="text" name="description" /></label>
+      <label class="field"><span>Image URL</span><input type="text" name="image" placeholder="/images/welcomeFood.svg" /></label>
+      <button type="submit" class="btn btn-primary btn-block">Create Category</button>
+    </form>
+  </div>
+</div>

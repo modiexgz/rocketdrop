@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container section fade-in">
+    <div class="section-head">
+      <h1>Notifications</h1>
+      <p>Order approvals, delivery details, payments and partner updates.</p>
+    </div>
+
+    <% if (notifications.length === 0) { %>
+      <div class="empty-state">
+        <p>No notifications yet — place an order to get started!</p>
+        <a href="/" class="btn btn-primary">Start Shopping</a>
+      </div>
+    <% } %>
+
+    <div class="notif-list">
+      <% notifications.forEach((n) => { %>
+        <article class="notif-item card reveal notif-<%= n.type %>">
+          <img src="/icons/<%= n.type === 'order' ? 'order' : n.type === 'payment' ? 'payment' : n.type === 'partner' ? 'partner' : 'bell' %>.svg" alt="" class="notif-icon-img" />
+          <div>
+            <h3><%= n.title %></h3>
+            <p><%= n.message %></p>
+            <small class="muted"><%= new Date(n.createdAt).toLocaleString('en-UG') %></small>
+          </div>
+        </article>
+      <% }) %>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

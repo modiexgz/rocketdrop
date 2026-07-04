@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body class="dash-body">
+  <%- include('../partials/header') %>
+
+  <div class="dash-shell">
+    <%- include('../partials/dash/sidebar', {
+      sidebarTitle: 'Admin',
+      activeTab,
+      reportHref: '/admin/reports/orders',
+      items: [
+        { id: 'orders', href: '/admin?tab=orders', icon: 'order', label: 'Orders', badge: stats.pendingOrders || null },
+        { id: 'categories', href: '/admin?tab=categories', icon: 'search', label: 'Categories' },
+        { id: 'products', href: '/admin?tab=products', icon: 'delivery', label: 'Products' },
+        { id: 'partners', href: '/admin?tab=partners', icon: 'partner', label: 'Partners', badge: stats.pendingPartners || null },
+        { id: 'users', href: '/admin?tab=users', icon: 'document', label: 'Users' }
+      ]
+    }) %>
+
+    <div class="dash-main">
+      <% if (stats.pendingOrders > 0 || stats.pendingPayments > 0 || stats.pendingPartners > 0) { %>
+        <div class="notif-bar slide-up">
+          <span class="notif-bar-icon"><%- include('../partials/icon', { name: 'bell', size: 22 }) %></span>
+          <div class="notif-bar-items">
+            <% if (stats.pendingOrders > 0) { %>
+              <a href="/admin?tab=orders"><strong><%= stats.pendingOrders %></strong> order<%= stats.pendingOrders > 1 ? 's' : '' %> need approval</a>
+            <% } %>
+            <% if (stats.pendingPayments > 0) { %>
+              <a href="/admin?tab=orders"><strong><%= stats.pendingPayments %></strong> payment<%= stats.pendingPayments > 1 ? 's' : '' %> to confirm</a>
+            <% } %>
+            <% if (stats.pendingPartners > 0) { %>
+              <a href="/admin?tab=partners"><strong><%= stats.pendingPartners %></strong> partner<%= stats.pendingPartners > 1 ? 's' : '' %> to review</a>
+            <% } %>
+          </div>
+        </div>
+      <% } %>
+
+      <div class="dash-main-head">
+        <div>
+          <h1><%= { orders:'Orders', categories:'Categories', products:'Products', partners:'Partner Applications', users:'Users' }[activeTab] || 'Admin Dashboard' %></h1>
+          <p class="muted">Manage your RocketDrop platform</p>
+        </div>
+        <div class="stats-inline">
+          <span><strong><%= stats.orders %></strong> orders</span>
+          <span><strong><%= stats.products %></strong> products</span>
+          <span><strong>UGX <%= stats.revenue.toLocaleString() %></strong> revenue</span>
+        </div>
+      </div>
+
+      <%- include('../partials/dash/orders-panel', { orders, statusLabels, paymentMethods, paymentStatusLabels, activeTab }) %>
+      <%- include('../partials/dash/categories-panel', { categories, basePath: '/admin', activeTab }) %>
+      <%- include('../partials/dash/products-panel', { products, categories, basePath: '/admin', activeTab }) %>
+      <%- include('../partials/dash/partners-panel', { partners, activeTab }) %>
+
+      <section class="panel <%= activeTab === 'users' ? 'active' : '' %>" id="users">
+        <div class="panel-head"><h2>Users</h2></div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>#</th><th>Full Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Joined</th></tr>
+            </thead>
+            <tbody>
+              <% users.forEach((u) => { %>
+                <tr>
+                  <td><%= u.id %></td>
+                  <td><strong><%= u.fullName %></strong></td>
+                  <td><%= u.email %></td>
+                  <td><%= u.phone %></td>
+                  <td><span class="badge badge-role-<%= u.role %>"><%= u.role %></span></td>
+                  <td class="t-muted"><%= new Date(u.createdAt).toLocaleDateString('en-UG') %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- CREATE ORDER MODAL -->
+  <div class="modern-modal" id="createOrderModal" hidden>
+    <div class="modern-modal-backdrop" data-close-modal></div>
+    <div class="modern-modal-card">
+      <button type="button" class="modal-close" data-close-modal>&times;</button>
+      <form method="POST" action="/admin/orders">
+        <h3>New Order</h3>
+        <label class="field"><span>Customer Email</span>
+          <input type="email" name="userEmail" list="userEmails" placeholder="customer@example.com" required />
+          <datalist id="userEmails">
+            <% users.filter(u => u.role !== 'admin').forEach((u) => { %><option value="<%= u.email %>"><%= u.fullName %></option><% }) %>
+          </datalist>
+        </label>
+        <label class="field"><span>Product</span>
+          <select name="productId" required>
+            <% products.forEach((p) => { %><option value="<%= p.id %>"><%= p.name %> — UGX <%= Number(p.price).toLocaleString() %></option><% }) %>
+          </select>
+        </label>
+        <label class="field"><span>Quantity</span><input type="number" name="quantity" value="1" min="1" required /></label>
+        <label class="field"><span>Delivery Address</span><input type="text" name="address" /></label>
+        <label class="field"><span>Payment Method</span>
+          <select name="paymentMethod">
+            <option value="cod">Cash on Delivery</option>
+            <option value="airtel">Airtel Money</option>
+            <option value="mtn">MTN Mobile Money</option>
+          </select>
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Create Order</button>
+      </form>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

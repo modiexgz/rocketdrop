@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container section fade-in">
+    <div class="section-head">
+      <h1>My Orders</h1>
+      <p>Track every order from approval to delivery.</p>
+    </div>
+
+    <% if (orders.length === 0) { %>
+      <div class="empty-state">
+        <p>You have not placed any orders yet.</p>
+        <a href="/" class="btn btn-primary">Start Shopping</a>
+      </div>
+    <% } %>
+
+    <% orders.forEach((order) => { %>
+      <article class="order-ticket card reveal">
+        <div class="order-ticket-head">
+          <div>
+            <h3>#<%= order.id %> · <%= order.item %> <span class="muted">× <%= order.quantity %></span></h3>
+            <p class="muted"><%= new Date(order.createdAt).toLocaleString('en-UG') %> · <%= order.address || 'No address given' %></p>
+          </div>
+          <div class="order-ticket-meta">
+            <span class="badge badge-<%= order.status %>"><%= statusLabels[order.status] %></span>
+            <strong class="price">UGX <%= Number(order.total).toLocaleString() %></strong>
+          </div>
+        </div>
+
+        <% if (order.status === 'rejected') { %>
+          <div class="stage-rejected">
+            <p><img src="/icons/rejected.svg" alt="" class="inline-icon" /> This order was not approved. Please try again or contact support.</p>
+          </div>
+        <% } else { %>
+          <!-- DELIVERY STAGES -->
+          <% const current = stageIndex(order.status); %>
+          <div class="stage-tracker">
+            <% stages.forEach((stage, i) => { %>
+              <div class="stage <%= i < current ? 'done' : '' %> <%= i === current ? 'current' : '' %>">
+                <span class="stage-dot"><%= i < current ? '✓' : i + 1 %></span>
+                <span class="stage-label"><%= stage.label %></span>
+              </div>
+              <% if (i < stages.length - 1) { %><div class="stage-line <%= i < current ? 'done' : '' %>"></div><% } %>
+            <% }) %>
+          </div>
+        <% } %>
+
+        <div class="order-ticket-foot">
+          <div class="pill-row">
+            <span class="pay-chip pay-<%= order.payment.method %>"><%= paymentMethods[order.payment.method].label %></span>
+            <span class="badge badge-pay-<%= order.payment.status %>"><%= paymentStatusLabels[order.payment.status] %></span>
+            <% if (order.payment.status === 'awaiting_confirmation') { %>
+              <span class="muted">We will notify you when the admin confirms your payment.</span>
+            <% } %>
+          </div>
+
+          <% if (order.deliveryMan) { %>
+            <div class="delivery-man">
+              <img src="/icons/delivery.svg" alt="" class="delivery-man-icon" />
+              <div>
+                <strong><%= order.deliveryMan.name %></strong>
+                <p class="muted">📞 <a href="tel:<%= order.deliveryMan.phone %>"><%= order.deliveryMan.phone %></a>
+                  <% if (order.deliveryMan.location) { %> · 📍 <%= order.deliveryMan.location %><% } %></p>
+              </div>
+            </div>
+          <% } else if (order.status === 'pending') { %>
+            <p class="muted">Waiting for approval — your delivery person's details will appear here.</p>
+          <% } %>
+        </div>
+      </article>
+    <% }) %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

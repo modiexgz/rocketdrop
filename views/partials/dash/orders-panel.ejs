@@ -1,0 +1,139 @@
+<section class="panel <%= activeTab === 'orders' ? 'active' : '' %>" id="orders">
+  <div class="panel-head">
+    <h2>Orders</h2>
+    <div class="panel-actions">
+      <button type="button" class="btn btn-primary btn-sm" data-open-modal="createOrderModal">+ New Order</button>
+      <a class="btn btn-ghost btn-sm" href="/admin/reports/orders" target="_blank"><%- include('../icon', { name: 'print', size: 16 }) %> Report</a>
+    </div>
+  </div>
+
+  <% if (orders.length === 0) { %>
+    <div class="empty-state"><p>No orders yet.</p></div>
+  <% } %>
+
+  <div class="order-cards">
+    <% orders.forEach((order) => { %>
+      <% const pay = order.payment || { method: 'cod', status: 'unpaid', phone: null }; %>
+      <% const payMethod = paymentMethods[pay.method] || paymentMethods.cod; %>
+      <% const needsPayment = pay.method !== 'cod' && pay.status === 'awaiting_confirmation'; %>
+      <% const canApprove = order.status === 'pending' && !needsPayment; %>
+      <article class="order-card card">
+        <div class="order-card-top">
+          <div>
+            <h3>#<%= order.id %> · <%= order.item %> <span class="muted">× <%= order.quantity %></span></h3>
+            <p class="muted"><%= order.userName %> · <%= order.userEmail %> · <%= order.userPhone %></p>
+            <p class="muted"><%= order.address || 'No address' %> · <%= new Date(order.createdAt).toLocaleString('en-UG') %></p>
+          </div>
+          <div class="order-card-meta">
+            <strong class="price">UGX <%= Number(order.total).toLocaleString() %></strong>
+            <span class="badge badge-<%= order.status %>"><%= statusLabels[order.status] %></span>
+          </div>
+        </div>
+
+        <!-- WORKFLOW PIPELINE -->
+        <div class="workflow-pipeline">
+          <div class="wf-step <%= 'done' %>">
+            <span class="wf-dot">1</span>
+            <span>Order Placed</span>
+          </div>
+          <div class="wf-line <%= pay.status === 'confirmed' || pay.method === 'cod' ? 'done' : (needsPayment ? 'current' : 'done') %>"></div>
+          <div class="wf-step <%= pay.status === 'confirmed' || pay.method === 'cod' ? 'done' : (needsPayment ? 'current' : '') %>">
+            <span class="wf-dot">2</span>
+            <span>Payment</span>
+          </div>
+          <div class="wf-line <%= ['approved','preparing','out_for_delivery','delivered'].includes(order.status) ? 'done' : '' %>"></div>
+          <div class="wf-step <%= ['approved','preparing','out_for_delivery','delivered'].includes(order.status) ? 'done' : (order.status === 'pending' && !needsPayment ? 'current' : '') %>">
+            <span class="wf-dot">3</span>
+            <span>Approved</span>
+          </div>
+          <div class="wf-line <%= ['preparing','out_for_delivery','delivered'].includes(order.status) ? 'done' : '' %>"></div>
+          <div class="wf-step <%= ['preparing','out_for_delivery','delivered'].includes(order.status) ? 'done' : (order.status === 'approved' ? 'current' : '') %>">
+            <span class="wf-dot">4</span>
+            <span>Preparing</span>
+          </div>
+          <div class="wf-line <%= ['out_for_delivery','delivered'].includes(order.status) ? 'done' : '' %>"></div>
+          <div class="wf-step <%= ['out_for_delivery','delivered'].includes(order.status) ? 'done' : (order.status === 'out_for_delivery' ? 'current' : '') %>">
+            <span class="wf-dot">5</span>
+            <span>Delivery</span>
+          </div>
+          <div class="wf-line <%= order.status === 'delivered' ? 'done' : '' %>"></div>
+          <div class="wf-step <%= order.status === 'delivered' ? 'done' : '' %>">
+            <span class="wf-dot">6</span>
+            <span>Delivered</span>
+          </div>
+        </div>
+
+        <div class="order-card-pills">
+          <span class="pay-chip pay-<%= pay.method %>"><%= payMethod.label %></span>
+          <span class="badge badge-pay-<%= pay.status %>"><%= paymentStatusLabels[pay.status] || pay.status %></span>
+          <% if (pay.phone) { %><span class="muted">Paid from: <%= pay.phone %></span><% } %>
+        </div>
+
+        <% if (order.deliveryMan) { %>
+          <div class="delivery-man">
+            <img src="/icons/delivery.svg" alt="" class="delivery-man-icon" />
+            <div>
+              <strong><%= order.deliveryMan.name %></strong>
+              <p class="muted"><%= order.deliveryMan.phone %><% if (order.deliveryMan.location) { %> · <%= order.deliveryMan.location %><% } %></p>
+            </div>
+          </div>
+        <% } %>
+
+        <% if (order.status !== 'rejected' && order.status !== 'delivered') { %>
+          <div class="order-card-actions">
+            <% if (needsPayment) { %>
+              <form method="POST" action="/admin/orders/<%= order.id %>/confirm-payment" class="inline-action-form" data-confirm="Confirm mobile money payment for order #<%= order.id %>?">
+                <button type="submit" class="btn btn-success btn-sm">Confirm Payment</button>
+              </form>
+            <% } %>
+
+            <% if (order.status === 'pending' && canApprove) { %>
+              <details class="action-details">
+                <summary class="btn btn-success btn-sm">Approve Order</summary>
+                <form method="POST" action="/admin/orders/<%= order.id %>/approve" class="inline-action-form stack-form">
+                  <label class="field"><span>Delivery Man Name *</span><input type="text" name="deliveryName" required placeholder="Full name" /></label>
+                  <label class="field"><span>Contact Phone *</span><input type="tel" name="deliveryPhone" required placeholder="07XXXXXXXX" /></label>
+                  <label class="field"><span>Location</span><input type="text" name="deliveryLocation" placeholder="Area / landmark" /></label>
+                  <button type="submit" class="btn btn-success btn-sm">Approve &amp; Notify Customer</button>
+                </form>
+              </details>
+              <details class="action-details">
+                <summary class="btn btn-danger btn-sm">Reject Order</summary>
+                <form method="POST" action="/admin/orders/<%= order.id %>/reject" class="inline-action-form stack-form">
+                  <label class="field"><span>Reason (optional)</span><input type="text" name="reason" placeholder="e.g. Out of stock" /></label>
+                  <button type="submit" class="btn btn-danger btn-sm">Reject &amp; Notify</button>
+                </form>
+              </details>
+            <% } else if (order.status === 'pending' && needsPayment) { %>
+              <p class="action-hint muted">Confirm payment first, then you can approve this order.</p>
+            <% } %>
+
+            <% if (['approved','preparing','out_for_delivery'].includes(order.status)) { %>
+              <form method="POST" action="/admin/orders/<%= order.id %>/stage" class="inline stage-form">
+                <select name="status" class="select-sm">
+                  <% if (order.status === 'approved') { %><option value="preparing">Move to Preparing</option><% } %>
+                  <% if (['approved','preparing'].includes(order.status)) { %><option value="out_for_delivery">Move to Out for Delivery</option><% } %>
+                  <option value="delivered">Mark as Delivered</option>
+                </select>
+                <button type="submit" class="btn btn-primary btn-sm">Update Stage</button>
+              </form>
+            <% } %>
+
+            <details class="action-details">
+              <summary class="btn btn-ghost btn-sm">Edit</summary>
+              <form method="POST" action="/admin/orders/<%= order.id %>/update" class="inline-action-form stack-form">
+                <label class="field"><span>Quantity</span><input type="number" name="quantity" value="<%= order.quantity %>" min="1" required /></label>
+                <label class="field"><span>Address</span><input type="text" name="address" value="<%= order.address || '' %>" /></label>
+                <button type="submit" class="btn btn-primary btn-sm">Save</button>
+              </form>
+            </details>
+
+            <form method="POST" action="/admin/orders/<%= order.id %>/delete" class="inline" data-confirm="Delete order #<%= order.id %>?">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </div>
+        <% } %>
+      </article>
+    <% }) %>
+  </div>
+</section>

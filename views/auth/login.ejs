@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body class="auth-body">
+  <%- include('../partials/header') %>
+
+  <main class="auth-page">
+    <div class="auth-card slide-up">
+      <div class="auth-logo"><%- include('../partials/logo') %></div>
+      <h1>Welcome back</h1>
+      <p class="auth-sub">Sign in to order, track deliveries and manage your account.</p>
+
+      <form method="POST" action="/auth/login" class="form">
+        <label class="field">
+          <span>Email</span>
+          <input type="email" name="email" placeholder="you@example.com" required autofocus />
+        </label>
+        <label class="field">
+          <span>Password</span>
+          <input type="password" name="password" placeholder="••••••••" required />
+        </label>
+        <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+      </form>
+
+      <p class="auth-alt">New to RocketDrop? <a href="/auth/register">Create an account</a></p>
+      <p class="auth-hint">Partners and admins sign in here too — you will be taken to your dashboard.</p>
+    </div>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>
