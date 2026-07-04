@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main class="container section fade-in">
+    <div class="section-head">
+      <h1>Become a Partner</h1>
+      <p>Restaurants, shops and pharmacies — join RocketDrop and reach more customers.</p>
+    </div>
+
+    <% if (application && application.status === 'pending') { %>
+      <div class="status-card card slide-up">
+        <span class="status-emoji">⏳</span>
+        <h2>Application under review</h2>
+        <p>Your application for <strong><%= application.businessName %></strong> was submitted on
+          <%= new Date(application.createdAt).toLocaleDateString('en-UG') %>.
+          Our team is reviewing it — you will receive a notification once it is approved or declined.</p>
+        <span class="badge badge-pending">Pending Review</span>
+      </div>
+    <% } else if (application && application.status === 'approved') { %>
+      <div class="status-card card slide-up">
+        <span class="status-emoji">🎉</span>
+        <h2>You are an approved partner!</h2>
+        <p><strong><%= application.businessName %></strong> is live on RocketDrop.</p>
+        <% if (currentUser.role === 'partner') { %>
+          <a href="/partner/dashboard" class="btn btn-primary">Open Partner Dashboard</a>
+        <% } else { %>
+          <p class="muted">Please <a href="/auth/logout">log out</a> and sign in again to access your Partner Dashboard.</p>
+        <% } %>
+      </div>
+    <% } else { %>
+      <% if (application && application.status === 'rejected') { %>
+        <div class="callout callout-error slide-up">
+          Your previous application for <strong><%= application.businessName %></strong> was declined.
+          You can update your details and apply again below.
+        </div>
+      <% } %>
+
+      <div class="order-layout">
+        <div class="card partner-pitch">
+          <div class="card-body">
+            <h2>Why partner with us?</h2>
+            <ul class="check-list">
+              <li>Your own partner dashboard</li>
+              <li>Create and manage your own categories</li>
+              <li>Add unlimited products</li>
+              <li>Track and update customer orders</li>
+              <li>Payments via Airtel Money &amp; MTN MoMo</li>
+            </ul>
+            <p class="auth-hint">After you apply, the admin reviews your application. You will get a notification whether you are approved or not.</p>
+          </div>
+        </div>
+
+        <form method="POST" action="/partner/apply" class="card order-form">
+          <div class="card-body">
+            <h2>Partner Application</h2>
+            <label class="field">
+              <span>Business Name</span>
+              <input type="text" name="businessName" placeholder="e.g. Mama's Kitchen" required />
+            </label>
+            <label class="field">
+              <span>Business Type</span>
+              <select name="businessType">
+                <option>Restaurant</option>
+                <option>Grocery Shop</option>
+                <option>Pharmacy</option>
+                <option>Fashion Store</option>
+                <option>Other</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Business Email</span>
+              <input type="email" name="businessEmail" placeholder="business@example.com" required />
+            </label>
+            <label class="field">
+              <span>Business Phone</span>
+              <input type="tel" name="businessPhone" placeholder="07XXXXXXXX" pattern="[0-9+]{9,15}" required />
+            </label>
+            <label class="field">
+              <span>Location</span>
+              <input type="text" name="location" placeholder="e.g. Kampala, Wandegeya" />
+            </label>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">Submit Application</button>
+          </div>
+        </form>
+      </div>
+    <% } %>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

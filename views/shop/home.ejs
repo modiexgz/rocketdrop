@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <%- include('../partials/head') %>
+</head>
+<body>
+  <%- include('../partials/header') %>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-bg"></div>
+      <div class="container hero-inner">
+        <div class="hero-rocket float"><%- include('../partials/logo') %></div>
+        <h1 class="hero-title slide-up">Fast Delivery<br /><span>To Your Door</span></h1>
+        <p class="hero-sub slide-up delay-1">Food, drinks, grocery, pharmacy and fashion — delivered in minutes across Uganda.</p>
+
+        <form class="search-box slide-up delay-2" method="GET" action="/">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input type="text" name="q" value="<%= query %>" placeholder="Search for pizza, milk, shoes…" />
+          <button type="submit" class="btn btn-primary">Search</button>
+        </form>
+
+        <div class="hero-badges slide-up delay-3">
+          <span class="pay-chip pay-airtel">Airtel Money</span>
+          <span class="pay-chip pay-mtn">MTN Mobile Money</span>
+          <span class="pay-chip pay-cod">Cash on Delivery</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- CATEGORIES -->
+    <section class="section container" id="categories">
+      <div class="section-head">
+        <h2>Delivery Categories</h2>
+        <p>Everything you need, one tap away.</p>
+      </div>
+      <div class="grid grid-4">
+        <% categories.forEach((cat, i) => { %>
+          <a href="/categories/<%= cat.id %>" class="card category-card reveal" style="--d: <%= i * 0.08 %>s">
+            <div class="card-media"><img src="<%= cat.image %>" alt="<%= cat.name %>" loading="lazy" /></div>
+            <div class="card-body">
+              <h3><%= cat.name %></h3>
+              <p><%= cat.description %></p>
+              <span class="card-link">Browse →</span>
+            </div>
+          </a>
+        <% }) %>
+      </div>
+    </section>
+
+    <!-- PRODUCTS -->
+    <section class="section container" id="products">
+      <div class="section-head">
+        <h2><%= query ? `Results for "${query}"` : 'Popular Right Now' %></h2>
+        <p><%= query ? `${products.length} item(s) found` : 'Order in seconds, delivered fast.' %></p>
+      </div>
+
+      <% if (products.length === 0) { %>
+        <div class="empty-state">
+          <p>Nothing matched your search. Try another keyword.</p>
+          <a href="/" class="btn btn-ghost">Clear search</a>
+        </div>
+      <% } else { %>
+        <div class="grid grid-4">
+          <% products.forEach((product, i) => { %>
+            <div class="card product-card reveal" style="--d: <%= (i % 8) * 0.06 %>s">
+              <div class="card-media"><img src="<%= product.image %>" alt="<%= product.name %>" loading="lazy" /></div>
+              <div class="card-body">
+                <h3><%= product.name %></h3>
+                <p class="price">UGX <%= Number(product.price).toLocaleString() %></p>
+                <% if (currentUser) { %>
+                  <a href="/orders/new/<%= product.id %>" class="btn btn-primary btn-block">Order Now</a>
+                <% } else { %>
+                  <a href="/auth/login" class="btn btn-primary btn-block">Sign in to Order</a>
+                <% } %>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      <% } %>
+    </section>
+
+    <!-- PARTNER CTA -->
+    <section class="section container">
+      <div class="cta-banner reveal">
+        <div>
+          <h2>Own a restaurant or shop?</h2>
+          <p>Register as a RocketDrop partner, get approved by our team, and manage your own categories, products and orders.</p>
+        </div>
+        <a href="<%= currentUser ? '/partner/apply' : '/auth/register' %>" class="btn btn-light">Become a Partner</a>
+      </div>
+    </section>
+  </main>
+
+  <%- include('../partials/footer') %>
+</body>
+</html>

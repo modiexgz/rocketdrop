@@ -1,0 +1,60 @@
+<header class="site-header">
+  <nav class="navbar container">
+    <a href="/" class="brand">
+      <%- include('logo') %>
+      <span class="brand-name">Rocket<em>Drop</em></span>
+    </a>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+
+    <ul class="nav-links" id="navLinks">
+      <li><a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Home</a></li>
+      <% if (currentUser) { %>
+        <li><a href="/orders/my" class="<%= currentPath === '/orders/my' ? 'active' : '' %>">My Orders</a></li>
+        <% if (currentUser.role === 'admin') { %>
+          <li><a href="/admin" class="<%= currentPath.startsWith('/admin') ? 'active' : '' %>">Admin</a></li>
+        <% } else if (currentUser.role === 'partner') { %>
+          <li><a href="/partner/dashboard" class="<%= currentPath.startsWith('/partner/dashboard') ? 'active' : '' %>">Partner Dashboard</a></li>
+        <% } else { %>
+          <li><a href="/partner/apply" class="<%= currentPath === '/partner/apply' ? 'active' : '' %>">Become a Partner</a></li>
+        <% } %>
+      <% } %>
+    </ul>
+
+    <div class="nav-actions">
+      <% if (currentUser) { %>
+        <div class="notif-wrap">
+          <button class="notif-bell" id="notifBell" aria-label="Notifications">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+              <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.7 21a2 2 0 0 1-3.4 0" />
+            </svg>
+            <span class="notif-badge <%= unreadNotifications > 0 ? 'show' : '' %>" id="notifBadge"><%= unreadNotifications %></span>
+          </button>
+          <div class="notif-dropdown" id="notifDropdown">
+            <div class="notif-dropdown-head">
+              <strong>Notifications</strong>
+              <a href="/notifications">View all</a>
+            </div>
+            <div class="notif-dropdown-list" id="notifDropdownList">
+              <p class="notif-empty">Loading…</p>
+            </div>
+          </div>
+        </div>
+        <span class="nav-user">Hi, <%= currentUser.fullName.split(' ')[0] %></span>
+        <a href="/auth/logout" class="btn btn-ghost btn-sm">Logout</a>
+      <% } else { %>
+        <a href="/auth/login" class="btn btn-ghost btn-sm">Sign In</a>
+        <a href="/auth/register" class="btn btn-primary btn-sm">Sign Up</a>
+      <% } %>
+    </div>
+  </nav>
+</header>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<% if (flash) { %>
+  <div class="flash-seed" data-type="<%= flash.type %>" data-message="<%= flash.message %>" hidden></div>
+<% } %>

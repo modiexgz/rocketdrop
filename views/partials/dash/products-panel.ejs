@@ -1,0 +1,78 @@
+<section class="panel" id="products">
+  <div class="panel-head">
+    <h2>Products</h2>
+    <button class="btn btn-primary btn-sm" data-open-modal="createProductModal">+ New Product</button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Image</th><th>Name</th><th>Category</th><th>Price (UGX)</th><th class="t-right">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% if (products.length === 0) { %>
+          <tr><td colspan="6" class="t-empty">No products yet — add your first one.</td></tr>
+        <% } %>
+        <% products.forEach((product) => { %>
+          <% const cat = categories.find((c) => c.id === product.categoryId); %>
+          <tr>
+            <td><%= product.id %></td>
+            <td><img src="<%= product.image %>" alt="" class="table-thumb" /></td>
+            <td><strong><%= product.name %></strong></td>
+            <td class="t-muted"><%= cat ? cat.name : '—' %></td>
+            <td><%= Number(product.price).toLocaleString() %></td>
+            <td class="t-right">
+              <button class="btn btn-ghost btn-sm"
+                data-edit-product
+                data-id="<%= product.id %>"
+                data-name="<%= product.name %>"
+                data-price="<%= product.price %>"
+                data-category-id="<%= product.categoryId %>"
+                data-image="<%= product.image %>"
+                data-description="<%= product.description %>">Edit</button>
+              <form method="POST" action="<%= basePath %>/products/<%= product.id %>/delete" class="inline" data-confirm="Delete product '<%= product.name %>'?">
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- CREATE PRODUCT MODAL -->
+<dialog class="modal" id="createProductModal">
+  <form method="POST" action="<%= basePath %>/products" class="modal-card">
+    <button type="button" class="modal-close" data-close-modal>&times;</button>
+    <h3>New Product</h3>
+    <label class="field"><span>Name</span><input type="text" name="name" required /></label>
+    <label class="field"><span>Price (UGX)</span><input type="number" name="price" min="0" required /></label>
+    <label class="field"><span>Category</span>
+      <select name="categoryId">
+        <% categories.forEach((c) => { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
+      </select>
+    </label>
+    <label class="field"><span>Image URL</span><input type="text" name="image" placeholder="/images/pizza.svg" /></label>
+    <label class="field"><span>Description</span><input type="text" name="description" /></label>
+    <button type="submit" class="btn btn-primary btn-block">Create Product</button>
+  </form>
+</dialog>
+
+<!-- EDIT PRODUCT MODAL -->
+<dialog class="modal" id="editProductModal">
+  <form method="POST" action="" class="modal-card" id="editProductForm" data-action-template="<%= basePath %>/products/{id}/update">
+    <button type="button" class="modal-close" data-close-modal>&times;</button>
+    <h3>Edit Product</h3>
+    <label class="field"><span>Name</span><input type="text" name="name" required /></label>
+    <label class="field"><span>Price (UGX)</span><input type="number" name="price" min="0" required /></label>
+    <label class="field"><span>Category</span>
+      <select name="categoryId">
+        <% categories.forEach((c) => { %><option value="<%= c.id %>"><%= c.name %></option><% }) %>
+      </select>
+    </label>
+    <label class="field"><span>Image URL</span><input type="text" name="image" /></label>
+    <label class="field"><span>Description</span><input type="text" name="description" /></label>
+    <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+  </form>
+</dialog>

@@ -1,0 +1,62 @@
+<section class="panel" id="categories">
+  <div class="panel-head">
+    <h2>Categories</h2>
+    <button class="btn btn-primary btn-sm" data-open-modal="createCategoryModal">+ New Category</button>
+  </div>
+
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>#</th><th>Image</th><th>Name</th><th>Description</th><th class="t-right">Actions</th></tr>
+      </thead>
+      <tbody>
+        <% if (categories.length === 0) { %>
+          <tr><td colspan="5" class="t-empty">No categories yet — create your first one.</td></tr>
+        <% } %>
+        <% categories.forEach((cat) => { %>
+          <tr>
+            <td><%= cat.id %></td>
+            <td><img src="<%= cat.image %>" alt="" class="table-thumb" /></td>
+            <td><strong><%= cat.name %></strong></td>
+            <td class="t-muted"><%= cat.description %></td>
+            <td class="t-right">
+              <button class="btn btn-ghost btn-sm"
+                data-edit-category
+                data-id="<%= cat.id %>"
+                data-name="<%= cat.name %>"
+                data-description="<%= cat.description %>"
+                data-image="<%= cat.image %>">Edit</button>
+              <form method="POST" action="<%= basePath %>/categories/<%= cat.id %>/delete" class="inline" data-confirm="Delete category '<%= cat.name %>'?">
+                <button class="btn btn-danger btn-sm">Delete</button>
+              </form>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- CREATE CATEGORY MODAL -->
+<dialog class="modal" id="createCategoryModal">
+  <form method="POST" action="<%= basePath %>/categories" class="modal-card">
+    <button type="button" class="modal-close" data-close-modal>&times;</button>
+    <h3>New Category</h3>
+    <label class="field"><span>Name</span><input type="text" name="name" required /></label>
+    <label class="field"><span>Description</span><input type="text" name="description" /></label>
+    <label class="field"><span>Image URL</span><input type="text" name="image" placeholder="/images/welcomeFood.svg" /></label>
+    <button type="submit" class="btn btn-primary btn-block">Create Category</button>
+  </form>
+</dialog>
+
+<!-- EDIT CATEGORY MODAL -->
+<dialog class="modal" id="editCategoryModal">
+  <form method="POST" action="" class="modal-card" id="editCategoryForm" data-action-template="<%= basePath %>/categories/{id}/update">
+    <button type="button" class="modal-close" data-close-modal>&times;</button>
+    <h3>Edit Category</h3>
+    <label class="field"><span>Name</span><input type="text" name="name" required /></label>
+    <label class="field"><span>Description</span><input type="text" name="description" /></label>
+    <label class="field"><span>Image URL</span><input type="text" name="image" /></label>
+    <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+  </form>
+</dialog>

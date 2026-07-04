@@ -1,0 +1,27 @@
+{
+  "name": "rocketdrop",
+  "version": "2.0.0",
+  "description": "RocketDrop — fast delivery platform for food, grocery, pharmacy and fashion (Uganda). Node.js + Express + EJS full-stack app.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "delivery",
+    "express",
+    "ejs",
+    "uganda"
+  ],
+  "author": "RocketDrop",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "ejs": "^3.1.10",
+    "exceljs": "^4.4.0",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "pdfkit": "^0.15.2"
+  }
+}
