@@ -18,7 +18,7 @@
     <!-- NOTIFICATION BAR -->
     <% if (stats.pending > 0) { %>
       <div class="notif-bar slide-up">
-        <span class="notif-bar-icon">🔔</span>
+        <span class="notif-bar-icon"><%- include('../partials/icon', { name: 'bell', size: 22 }) %></span>
         <div class="notif-bar-items">
           <a href="#orders" data-tab-link="orders"><strong><%= stats.pending %></strong> order<%= stats.pending > 1 ? 's' : '' %> waiting for admin approval</a>
         </div>
@@ -35,13 +35,12 @@
 
     <!-- TABS -->
     <nav class="dash-tabs">
-      <button data-tab="orders" class="active">Orders <% if (stats.pending > 0) { %><span class="tab-badge"><%= stats.pending %></span><% } %></button>
-      <button data-tab="categories">Categories</button>
-      <button data-tab="products">Products</button>
+      <button type="button" data-tab="orders" class="<%= activeTab === 'orders' ? 'active' : '' %>">Orders <% if (stats.pending > 0) { %><span class="tab-badge"><%= stats.pending %></span><% } %></button>
+      <button type="button" data-tab="categories" class="<%= activeTab === 'categories' ? 'active' : '' %>">Categories</button>
+      <button type="button" data-tab="products" class="<%= activeTab === 'products' ? 'active' : '' %>">Products</button>
     </nav>
 
-    <!-- ORDERS PANEL -->
-    <section class="panel" id="orders">
+    <section class="panel <%= activeTab === 'orders' ? 'active' : '' %>" id="orders">
       <div class="panel-head"><h2>Your Orders</h2></div>
       <div class="table-wrap">
         <table class="table">
@@ -53,6 +52,8 @@
               <tr><td colspan="8" class="t-empty">No orders on your products yet.</td></tr>
             <% } %>
             <% orders.forEach((order) => { %>
+              <% const pay = order.payment || { method: 'cod', status: 'unpaid' }; %>
+              <% const payMethod = paymentMethods[pay.method] || paymentMethods.cod; %>
               <tr>
                 <td><%= order.id %></td>
                 <td><strong><%= order.item %></strong></td>
@@ -60,8 +61,8 @@
                 <td><%= order.quantity %></td>
                 <td><%= Number(order.total).toLocaleString() %></td>
                 <td>
-                  <span class="pay-chip pay-<%= order.payment.method %>"><%= paymentMethods[order.payment.method].label %></span><br />
-                  <span class="badge badge-pay-<%= order.payment.status %>"><%= paymentStatusLabels[order.payment.status] %></span>
+                  <span class="pay-chip pay-<%= pay.method %>"><%= payMethod.label %></span><br />
+                  <span class="badge badge-pay-<%= pay.status %>"><%= paymentStatusLabels[pay.status] || pay.status %></span>
                 </td>
                 <td><span class="badge badge-<%= order.status %>"><%= statusLabels[order.status] %></span></td>
                 <td class="t-right t-actions">
@@ -88,8 +89,8 @@
     </section>
 
     <!-- CATEGORIES + PRODUCTS PANELS (shared partials) -->
-    <%- include('../partials/dash/categories-panel', { categories, basePath: '/partner' }) %>
-    <%- include('../partials/dash/products-panel', { products, categories, basePath: '/partner' }) %>
+    <%- include('../partials/dash/categories-panel', { categories, basePath: '/partner', activeTab }) %>
+    <%- include('../partials/dash/products-panel', { products, categories, basePath: '/partner', activeTab }) %>
   </main>
 
   <%- include('../partials/footer') %>

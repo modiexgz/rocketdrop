@@ -2,38 +2,34 @@ const express = require("express");
 const router = express.Router();
 const admin = require("../controllers/adminController");
 const report = require("../controllers/reportController");
+const asyncHandler = require("../utils/asyncHandler");
 const { ensureAuth, ensureAdmin } = require("../middleware/auth");
 
 router.use(ensureAuth, ensureAdmin);
 
-router.get("/", admin.dashboard);
+router.get("/", asyncHandler(admin.dashboard));
 
-// Categories
-router.post("/categories", admin.createCategory);
-router.post("/categories/:id/update", admin.updateCategory);
-router.post("/categories/:id/delete", admin.deleteCategory);
+router.post("/categories", asyncHandler(admin.createCategory));
+router.post("/categories/:id/update", asyncHandler(admin.updateCategory));
+router.post("/categories/:id/delete", asyncHandler(admin.deleteCategory));
 
-// Products
-router.post("/products", admin.createProduct);
-router.post("/products/:id/update", admin.updateProduct);
-router.post("/products/:id/delete", admin.deleteProduct);
+router.post("/products", asyncHandler(admin.createProduct));
+router.post("/products/:id/update", asyncHandler(admin.updateProduct));
+router.post("/products/:id/delete", asyncHandler(admin.deleteProduct));
 
-// Orders
-router.post("/orders", admin.createOrder);
-router.post("/orders/:id/update", admin.updateOrder);
-router.post("/orders/:id/delete", admin.deleteOrder);
-router.post("/orders/:id/approve", admin.approveOrder);
-router.post("/orders/:id/reject", admin.rejectOrder);
-router.post("/orders/:id/stage", admin.updateOrderStage);
-router.post("/orders/:id/confirm-payment", admin.confirmPayment);
+router.post("/orders", asyncHandler(admin.createOrder));
+router.post("/orders/:id/update", asyncHandler(admin.updateOrder));
+router.post("/orders/:id/delete", asyncHandler(admin.deleteOrder));
+router.post("/orders/:id/approve", asyncHandler(admin.approveOrder));
+router.post("/orders/:id/reject", asyncHandler(admin.rejectOrder));
+router.post("/orders/:id/stage", asyncHandler(admin.updateOrderStage));
+router.post("/orders/:id/confirm-payment", asyncHandler(admin.confirmPayment));
 
-// Partners
-router.post("/partners/:id/approve", admin.approvePartner);
-router.post("/partners/:id/reject", admin.rejectPartner);
+router.post("/partners/:id/approve", asyncHandler(admin.approvePartner));
+router.post("/partners/:id/reject", asyncHandler(admin.rejectPartner));
 
-// Reports
-router.get("/reports/orders", report.ordersReportPage);
-router.get("/reports/orders.pdf", report.ordersPdf);
-router.get("/reports/orders.xlsx", report.ordersExcel);
+router.get("/reports/orders", asyncHandler(report.ordersReportPage));
+router.get("/reports/orders.pdf", asyncHandler(report.ordersPdf));
+router.get("/reports/orders.xlsx", asyncHandler(report.ordersExcel));
 
 module.exports = router;

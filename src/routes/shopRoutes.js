@@ -13,5 +13,6 @@ router.get("/orders/my", ensureAuth, shop.myOrders);
 router.get("/notifications", ensureAuth, shop.notificationsPage);
 router.get("/api/notifications", ensureAuth, shop.notificationsApi);
 router.post("/api/notifications/read", ensureAuth, shop.markNotificationsRead);
+router.get("/api/search", shop.searchApi);
 
 module.exports = router;

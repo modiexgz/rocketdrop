@@ -1,6 +1,7 @@
 const db = require("../models/db");
 const notificationService = require("../services/notificationService");
 const { ORDER_STAGES, ORDER_STATUS_LABELS, PAYMENT_METHODS, PAYMENT_STATUS_LABELS, stageIndex } = require("../models/constants");
+const { safeRedirect } = require("../utils/safeRedirect");
 
 exports.home = (req, res) => {
   const categories = db.readAll("categories");
@@ -77,13 +78,13 @@ exports.placeOrder = (req, res) => {
 
   notificationService.notify(req.session.user.id, {
     type: "order",
-    title: "Order placed 🚀",
+    title: "Order placed",
     message: `Your order #${order.id} for ${product.name} (x${quantity}) has been received and is waiting for approval.`,
     orderId: order.id
   });
 
   req.session.flash = { type: "success", message: `Order #${order.id} placed! We will notify you once it is approved.` };
-  res.redirect("/orders/my");
+  safeRedirect(req, res, "/orders/my");
 };
 
 exports.myOrders = (req, res) => {
@@ -122,3 +123,39 @@ exports.markNotificationsRead = (req, res) => {
   notificationService.markAllRead(req.session.user.id);
   res.json({ success: true });
 };
+
+exports.searchApi = (req, res) => {
+  const q = (req.query.q || "").toLowerCase().trim();
+  const categories = db.readAll("categories");
+  const products = db.readAll("products");
+
+  if (!q) {
+    return res.json({ query: "", results: products.slice(0, 12).map((p) => formatProduct(p, categories)) });
+  }
+
+  const results = products
+    .filter((p) => {
+      const cat = categories.find((c) => c.id === p.categoryId);
+      return (
+        p.name.toLowerCase().includes(q) ||
+        (p.description || "").toLowerCase().includes(q) ||
+        (cat && cat.name.toLowerCase().includes(q))
+      );
+    })
+    .slice(0, 20)
+    .map((p) => formatProduct(p, categories));
+
+  res.json({ query: q, results });
+};
+
+function formatProduct(product, categories) {
+  const cat = categories.find((c) => c.id === product.categoryId);
+  return {
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    image: product.image,
+    category: cat ? cat.name : "",
+    url: `/orders/new/${product.id}`
+  };
+}

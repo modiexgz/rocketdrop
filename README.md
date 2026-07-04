@@ -29,8 +29,10 @@ Fast delivery platform for food, drinks, grocery, pharmacy and fashion — built
 
 ```bash
 npm install
-npm start          # http://localhost:3000
+npm start          # http://localhost:3000 (recommended — stable, no auto-restart)
 ```
+
+Sessions are stored on disk (`data/sessions/`) so you stay logged in across server restarts. JSON data files use atomic writes with automatic backup recovery if a file is corrupted.
 
 Default admin account (seeded on first run):
 

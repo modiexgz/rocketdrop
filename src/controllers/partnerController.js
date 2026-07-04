@@ -1,8 +1,31 @@
 const db = require("../models/db");
 const notificationService = require("../services/notificationService");
 const { ORDER_STATUS_LABELS, PAYMENT_METHODS, PAYMENT_STATUS_LABELS } = require("../models/constants");
+const { safeRedirect } = require("../utils/safeRedirect");
 
-// ---- User-facing: apply to become a partner ----
+function partnerUrl(tab) {
+  return tab ? `/partner/dashboard?tab=${tab}` : "/partner/dashboard";
+}
+
+function partnerPayload(body, user) {
+  return {
+    applicantName: user.fullName,
+    businessName: (body.businessName || "").trim(),
+    businessType: (body.businessType || "Restaurant").trim(),
+    email: (body.businessEmail || "").trim(),
+    phone: (body.businessPhone || "").trim(),
+    ownerName: (body.ownerName || user.fullName).trim(),
+    ownerPhone: (body.ownerPhone || user.phone || "").trim(),
+    location: (body.location || "").trim(),
+    district: (body.district || "").trim(),
+    city: (body.city || "Kampala").trim(),
+    registrationNumber: (body.registrationNumber || "").trim(),
+    description: (body.description || "").trim(),
+    openingHours: (body.openingHours || "").trim(),
+    website: (body.website || "").trim(),
+    status: "pending"
+  };
+}
 
 exports.applyPage = (req, res) => {
   const existing = db.findOne("partners", (p) => p.userId === req.session.user.id);
@@ -10,52 +33,36 @@ exports.applyPage = (req, res) => {
 };
 
 exports.apply = (req, res) => {
-  const { businessName, businessEmail, businessPhone, location, businessType } = req.body;
-
   const existing = db.findOne("partners", (p) => p.userId === req.session.user.id);
   if (existing && existing.status !== "rejected") {
-    req.session.flash = { type: "error", message: "You already have a partner application." };
-    return res.redirect("/partner/apply");
+    req.session.flash = { type: "error", message: "You already have a partner application under review." };
+    return safeRedirect(req, res, "/partner/apply");
   }
 
-  if (!businessName || !businessEmail || !businessPhone) {
-    req.session.flash = { type: "error", message: "Business name, email and phone are required." };
-    return res.redirect("/partner/apply");
+  const payload = partnerPayload(req.body, req.session.user);
+  if (!payload.businessName || !payload.email || !payload.phone || !payload.location || !payload.ownerName || !payload.description || !payload.district || !payload.city) {
+    req.session.flash = {
+      type: "error",
+      message: "Please fill in all required fields: business name, type, description, email, phone, owner name, city, district and address."
+    };
+    return safeRedirect(req, res, "/partner/apply");
   }
 
   if (existing && existing.status === "rejected") {
-    db.update("partners", existing.id, {
-      businessName: businessName.trim(),
-      email: businessEmail.trim(),
-      phone: businessPhone.trim(),
-      location: (location || "").trim(),
-      businessType: (businessType || "Restaurant").trim(),
-      status: "pending"
-    });
+    db.update("partners", existing.id, payload);
   } else {
-    db.insert("partners", {
-      userId: req.session.user.id,
-      applicantName: req.session.user.fullName,
-      businessName: businessName.trim(),
-      email: businessEmail.trim(),
-      phone: businessPhone.trim(),
-      location: (location || "").trim(),
-      businessType: (businessType || "Restaurant").trim(),
-      status: "pending"
-    });
+    db.insert("partners", { userId: req.session.user.id, ...payload });
   }
 
   notificationService.notify(req.session.user.id, {
     type: "partner",
-    title: "Partner application received 🤝",
-    message: `Thanks ${req.session.user.fullName}! Your application for "${businessName}" was submitted. Our team will review it and notify you once it is approved or declined.`
+    title: "Partner application received",
+    message: `Thanks ${req.session.user.fullName}! Your application for "${payload.businessName}" was submitted. Our team will review it and notify you once it is approved or declined.`
   });
 
-  req.session.flash = { type: "success", message: "Application submitted! We will notify you after review." };
-  res.redirect("/partner/apply");
+  req.session.flash = { type: "success", message: "Application submitted successfully. We will notify you after review." };
+  safeRedirect(req, res, "/partner/apply");
 };
-
-// ---- Partner dashboard ----
 
 function currentPartner(req) {
   return db.findOne("partners", (p) => p.userId === req.session.user.id && p.status === "approved");
@@ -63,8 +70,9 @@ function currentPartner(req) {
 
 exports.dashboard = (req, res) => {
   const partner = currentPartner(req);
-  if (!partner) return res.redirect("/partner/apply");
+  if (!partner) return safeRedirect(req, res, "/partner/apply");
 
+  const tab = ["orders", "categories", "products"].includes(req.query.tab) ? req.query.tab : "orders";
   const categories = db.find("categories", (c) => c.ownerType === "partner" && c.ownerId === partner.id);
   const products = db.find("products", (p) => p.ownerType === "partner" && p.ownerId === partner.id);
   const orders = db
@@ -77,6 +85,7 @@ exports.dashboard = (req, res) => {
     categories,
     products,
     orders,
+    activeTab: tab,
     stats: {
       categories: categories.length,
       products: products.length,
@@ -90,15 +99,13 @@ exports.dashboard = (req, res) => {
   });
 };
 
-// ---- Partner category CRUD ----
-
 exports.createCategory = (req, res) => {
   const partner = currentPartner(req);
-  if (!partner) return res.redirect("/partner/apply");
+  if (!partner) return safeRedirect(req, res, "/partner/apply");
   const { name, description, image } = req.body;
-  if (!name) {
+  if (!name || !name.trim()) {
     req.session.flash = { type: "error", message: "Category name is required." };
-    return res.redirect("/partner/dashboard#categories");
+    return safeRedirect(req, res, partnerUrl("categories"));
   }
   db.insert("categories", {
     name: name.trim(),
@@ -107,8 +114,8 @@ exports.createCategory = (req, res) => {
     ownerType: "partner",
     ownerId: partner.id
   });
-  req.session.flash = { type: "success", message: `Category "${name}" created.` };
-  res.redirect("/partner/dashboard#categories");
+  req.session.flash = { type: "success", message: `Category "${name.trim()}" created.` };
+  safeRedirect(req, res, partnerUrl("categories"));
 };
 
 exports.updateCategory = (req, res) => {
@@ -116,7 +123,7 @@ exports.updateCategory = (req, res) => {
   const category = db.findById("categories", req.params.id);
   if (!partner || !category || category.ownerId !== partner.id) {
     req.session.flash = { type: "error", message: "Category not found." };
-    return res.redirect("/partner/dashboard#categories");
+    return safeRedirect(req, res, partnerUrl("categories"));
   }
   const { name, description, image } = req.body;
   db.update("categories", category.id, {
@@ -125,7 +132,7 @@ exports.updateCategory = (req, res) => {
     image: (image || category.image).trim()
   });
   req.session.flash = { type: "success", message: "Category updated." };
-  res.redirect("/partner/dashboard#categories");
+  safeRedirect(req, res, partnerUrl("categories"));
 };
 
 exports.deleteCategory = (req, res) => {
@@ -135,18 +142,16 @@ exports.deleteCategory = (req, res) => {
     db.remove("categories", category.id);
     req.session.flash = { type: "success", message: "Category deleted." };
   }
-  res.redirect("/partner/dashboard#categories");
+  safeRedirect(req, res, partnerUrl("categories"));
 };
-
-// ---- Partner product (order item) CRUD ----
 
 exports.createProduct = (req, res) => {
   const partner = currentPartner(req);
-  if (!partner) return res.redirect("/partner/apply");
+  if (!partner) return safeRedirect(req, res, "/partner/apply");
   const { name, price, categoryId, image, description } = req.body;
-  if (!name || !price) {
+  if (!name || !name.trim() || !price) {
     req.session.flash = { type: "error", message: "Product name and price are required." };
-    return res.redirect("/partner/dashboard#products");
+    return safeRedirect(req, res, partnerUrl("products"));
   }
   db.insert("products", {
     name: name.trim(),
@@ -157,8 +162,8 @@ exports.createProduct = (req, res) => {
     ownerType: "partner",
     ownerId: partner.id
   });
-  req.session.flash = { type: "success", message: `Product "${name}" created.` };
-  res.redirect("/partner/dashboard#products");
+  req.session.flash = { type: "success", message: `Product "${name.trim()}" created.` };
+  safeRedirect(req, res, partnerUrl("products"));
 };
 
 exports.updateProduct = (req, res) => {
@@ -166,7 +171,7 @@ exports.updateProduct = (req, res) => {
   const product = db.findById("products", req.params.id);
   if (!partner || !product || product.ownerId !== partner.id) {
     req.session.flash = { type: "error", message: "Product not found." };
-    return res.redirect("/partner/dashboard#products");
+    return safeRedirect(req, res, partnerUrl("products"));
   }
   const { name, price, categoryId, image, description } = req.body;
   db.update("products", product.id, {
@@ -177,7 +182,7 @@ exports.updateProduct = (req, res) => {
     description: (description || "").trim()
   });
   req.session.flash = { type: "success", message: "Product updated." };
-  res.redirect("/partner/dashboard#products");
+  safeRedirect(req, res, partnerUrl("products"));
 };
 
 exports.deleteProduct = (req, res) => {
@@ -187,31 +192,29 @@ exports.deleteProduct = (req, res) => {
     db.remove("products", product.id);
     req.session.flash = { type: "success", message: "Product deleted." };
   }
-  res.redirect("/partner/dashboard#products");
+  safeRedirect(req, res, partnerUrl("products"));
 };
-
-// ---- Partner order management (advance stages on own orders) ----
 
 exports.updateOrderStage = (req, res) => {
   const partner = currentPartner(req);
   const order = db.findById("orders", req.params.id);
   if (!partner || !order || order.ownerId !== partner.id) {
     req.session.flash = { type: "error", message: "Order not found." };
-    return res.redirect("/partner/dashboard#orders");
+    return safeRedirect(req, res, partnerUrl("orders"));
   }
   const allowed = ["preparing", "out_for_delivery", "delivered"];
   const status = req.body.status;
   if (!allowed.includes(status) || order.status === "pending" || order.status === "rejected") {
     req.session.flash = { type: "error", message: "This stage change is not allowed." };
-    return res.redirect("/partner/dashboard#orders");
+    return safeRedirect(req, res, partnerUrl("orders"));
   }
   db.update("orders", order.id, { status });
   notificationService.notify(order.userId, {
     type: "order",
-    title: `Order #${order.id} update 📦`,
+    title: `Order #${order.id} update`,
     message: `Your order for ${order.item} is now: ${status.replace(/_/g, " ")}.`,
     orderId: order.id
   });
-  req.session.flash = { type: "success", message: `Order #${order.id} moved to "${status.replace(/_/g, " ")}".` };
-  res.redirect("/partner/dashboard#orders");
+  req.session.flash = { type: "success", message: `Order #${order.id} updated.` };
+  safeRedirect(req, res, partnerUrl("orders"));
 };

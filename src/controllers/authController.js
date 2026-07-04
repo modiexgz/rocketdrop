@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const db = require("../models/db");
+const { safeRedirect } = require("../utils/safeRedirect");
 
 function sessionUser(user) {
   return {
@@ -64,7 +65,7 @@ exports.register = (req, res) => {
 
   req.session.user = sessionUser(user);
   req.session.flash = { type: "success", message: `Welcome to RocketDrop, ${user.fullName}!` };
-  res.redirect("/");
+  safeRedirect(req, res, "/");
 };
 
 exports.login = (req, res) => {
@@ -73,12 +74,12 @@ exports.login = (req, res) => {
 
   if (!user || !bcrypt.compareSync(password || "", user.password)) {
     req.session.flash = { type: "error", message: "Invalid email or password." };
-    return res.redirect("/auth/login");
+    return safeRedirect(req, res, "/auth/login");
   }
 
   req.session.user = sessionUser(user);
   req.session.flash = { type: "success", message: `Welcome back, ${user.fullName}!` };
-  res.redirect(redirectFor(user));
+  safeRedirect(req, res, redirectFor(user));
 };
 
 exports.logout = (req, res) => {

@@ -22,9 +22,7 @@
     <div class="notif-list">
       <% notifications.forEach((n) => { %>
         <article class="notif-item card reveal notif-<%= n.type %>">
-          <span class="notif-icon">
-            <%= n.type === 'order' ? '📦' : n.type === 'payment' ? '💰' : n.type === 'partner' ? '🤝' : '🔔' %>
-          </span>
+          <img src="/icons/<%= n.type === 'order' ? 'order' : n.type === 'payment' ? 'payment' : n.type === 'partner' ? 'partner' : 'bell' %>.svg" alt="" class="notif-icon-img" />
           <div>
             <h3><%= n.title %></h3>
             <p><%= n.message %></p>

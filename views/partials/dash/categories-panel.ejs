@@ -1,7 +1,7 @@
-<section class="panel" id="categories">
+<section class="panel <%= typeof activeTab !== 'undefined' && activeTab === 'categories' ? 'active' : '' %>" id="categories">
   <div class="panel-head">
     <h2>Categories</h2>
-    <button class="btn btn-primary btn-sm" data-open-modal="createCategoryModal">+ New Category</button>
+    <button type="button" class="btn btn-primary btn-sm" data-open-modal="createCategoryModal">+ New Category</button>
   </div>
 
   <div class="table-wrap">
@@ -20,14 +20,11 @@
             <td><strong><%= cat.name %></strong></td>
             <td class="t-muted"><%= cat.description %></td>
             <td class="t-right">
-              <button class="btn btn-ghost btn-sm"
+              <button type="button" class="btn btn-ghost btn-sm"
                 data-edit-category
-                data-id="<%= cat.id %>"
-                data-name="<%= cat.name %>"
-                data-description="<%= cat.description %>"
-                data-image="<%= cat.image %>">Edit</button>
-              <form method="POST" action="<%= basePath %>/categories/<%= cat.id %>/delete" class="inline" data-confirm="Delete category '<%= cat.name %>'?">
-                <button class="btn btn-danger btn-sm">Delete</button>
+                data-payload="<%= jsonAttr({ id: cat.id, name: cat.name, description: cat.description || '', image: cat.image || '' }) %>">Edit</button>
+              <form method="POST" action="<%= basePath %>/categories/<%= cat.id %>/delete" class="inline" data-confirm="Delete this category?">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
               </form>
             </td>
           </tr>
@@ -37,7 +34,6 @@
   </div>
 </section>
 
-<!-- CREATE CATEGORY MODAL -->
 <dialog class="modal" id="createCategoryModal">
   <form method="POST" action="<%= basePath %>/categories" class="modal-card">
     <button type="button" class="modal-close" data-close-modal>&times;</button>
@@ -49,7 +45,6 @@
   </form>
 </dialog>
 
-<!-- EDIT CATEGORY MODAL -->
 <dialog class="modal" id="editCategoryModal">
   <form method="POST" action="" class="modal-card" id="editCategoryForm" data-action-template="<%= basePath %>/categories/{id}/update">
     <button type="button" class="modal-close" data-close-modal>&times;</button>

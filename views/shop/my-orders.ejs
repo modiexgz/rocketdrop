@@ -34,7 +34,7 @@
 
         <% if (order.status === 'rejected') { %>
           <div class="stage-rejected">
-            <p>❌ This order was not approved. Please try again or contact support.</p>
+            <p><img src="/icons/rejected.svg" alt="" class="inline-icon" /> This order was not approved. Please try again or contact support.</p>
           </div>
         <% } else { %>
           <!-- DELIVERY STAGES -->
@@ -61,7 +61,7 @@
 
           <% if (order.deliveryMan) { %>
             <div class="delivery-man">
-              <span class="delivery-man-avatar">🛵</span>
+              <img src="/icons/delivery.svg" alt="" class="delivery-man-icon" />
               <div>
                 <strong><%= order.deliveryMan.name %></strong>
                 <p class="muted">📞 <a href="tel:<%= order.deliveryMan.phone %>"><%= order.deliveryMan.phone %></a>
@@ -69,7 +69,7 @@
               </div>
             </div>
           <% } else if (order.status === 'pending') { %>
-            <p class="muted">⏳ Waiting for approval — your delivery man's details will appear here.</p>
+            <p class="muted">Waiting for approval — your delivery person's details will appear here.</p>
           <% } %>
         </div>
       </article>

@@ -1,7 +1,7 @@
-<section class="panel" id="products">
+<section class="panel <%= typeof activeTab !== 'undefined' && activeTab === 'products' ? 'active' : '' %>" id="products">
   <div class="panel-head">
     <h2>Products</h2>
-    <button class="btn btn-primary btn-sm" data-open-modal="createProductModal">+ New Product</button>
+    <button type="button" class="btn btn-primary btn-sm" data-open-modal="createProductModal">+ New Product</button>
   </div>
 
   <div class="table-wrap">
@@ -22,16 +22,11 @@
             <td class="t-muted"><%= cat ? cat.name : '—' %></td>
             <td><%= Number(product.price).toLocaleString() %></td>
             <td class="t-right">
-              <button class="btn btn-ghost btn-sm"
+              <button type="button" class="btn btn-ghost btn-sm"
                 data-edit-product
-                data-id="<%= product.id %>"
-                data-name="<%= product.name %>"
-                data-price="<%= product.price %>"
-                data-category-id="<%= product.categoryId %>"
-                data-image="<%= product.image %>"
-                data-description="<%= product.description %>">Edit</button>
-              <form method="POST" action="<%= basePath %>/products/<%= product.id %>/delete" class="inline" data-confirm="Delete product '<%= product.name %>'?">
-                <button class="btn btn-danger btn-sm">Delete</button>
+                data-payload="<%= jsonAttr({ id: product.id, name: product.name, price: product.price, categoryId: product.categoryId, image: product.image || '', description: product.description || '' }) %>">Edit</button>
+              <form method="POST" action="<%= basePath %>/products/<%= product.id %>/delete" class="inline" data-confirm="Delete this product?">
+                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
               </form>
             </td>
           </tr>
@@ -41,7 +36,6 @@
   </div>
 </section>
 
-<!-- CREATE PRODUCT MODAL -->
 <dialog class="modal" id="createProductModal">
   <form method="POST" action="<%= basePath %>/products" class="modal-card">
     <button type="button" class="modal-close" data-close-modal>&times;</button>
@@ -59,7 +53,6 @@
   </form>
 </dialog>
 
-<!-- EDIT PRODUCT MODAL -->
 <dialog class="modal" id="editProductModal">
   <form method="POST" action="" class="modal-card" id="editProductForm" data-action-template="<%= basePath %>/products/{id}/update">
     <button type="button" class="modal-close" data-close-modal>&times;</button>
