@@ -3,7 +3,13 @@ const notificationService = require("../services/notificationService");
 const { ORDER_STAGES, ORDER_STATUS_LABELS, PAYMENT_METHODS, PAYMENT_STATUS_LABELS, stageIndex } = require("../models/constants");
 const { safeRedirect } = require("../utils/safeRedirect");
 
+const CATEGORY_THEMES = ["food", "grocery", "pharmacy", "fashion"];
+
 exports.home = (req, res) => {
+  if (req.session.user && req.session.user.role === "admin") {
+    return res.redirect("/admin");
+  }
+
   const categories = db.readAll("categories");
   const products = db.readAll("products");
   const q = (req.query.q || "").toLowerCase().trim();
@@ -18,9 +24,15 @@ exports.home = (req, res) => {
       })
     : products;
 
+  const categoriesWithMeta = categories.map((cat, i) => ({
+    ...cat,
+    theme: CATEGORY_THEMES[i % CATEGORY_THEMES.length],
+    productCount: products.filter((p) => p.categoryId === cat.id).length
+  }));
+
   res.render("shop/home", {
     title: "Fast Delivery To Your Door",
-    categories,
+    categories: categoriesWithMeta,
     products: filtered,
     query: req.query.q || ""
   });

@@ -49,6 +49,24 @@ function ensurePartner(req, res, next) {
   next();
 }
 
+function ensureCustomer(req, res, next) {
+  if (!req.session.user) {
+    return res.redirect("/auth/login");
+  }
+  if (req.session.user.role !== "user") {
+    req.session.flash = {
+      type: "error",
+      message: req.session.user.role === "admin"
+        ? "Admins manage orders from the admin console — customer checkout is not available on this account."
+        : "Partners manage their menu from Manage Store — customer ordering is not available on this account."
+    };
+    if (req.session.user.role === "admin") return res.redirect("/admin");
+    if (req.session.user.role === "partner") return res.redirect("/partner/dashboard");
+    return res.redirect("/");
+  }
+  next();
+}
+
 function ensureStaff(req, res, next) {
   const role = req.session.user && req.session.user.role;
   if (role !== "admin" && role !== "partner") {
@@ -61,4 +79,4 @@ function ensureStaff(req, res, next) {
   next();
 }
 
-module.exports = { ensureAuth, ensureAdmin, ensurePartner, ensureStaff, syncPartnerSession };
+module.exports = { ensureAuth, ensureAdmin, ensurePartner, ensureCustomer, ensureStaff, syncPartnerSession };

@@ -4,7 +4,7 @@ const { ORDER_STATUS_LABELS, PAYMENT_METHODS, PAYMENT_STATUS_LABELS } = require(
 const { safeRedirect } = require("../utils/safeRedirect");
 
 function adminUrl(tab) {
-  return tab ? `/admin?tab=${tab}` : "/admin";
+  return tab && tab !== "overview" ? `/admin?tab=${tab}` : "/admin";
 }
 
 function dashboardData() {
@@ -14,21 +14,31 @@ function dashboardData() {
   const partners = db.readAll("partners").sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   const users = db.readAll("users");
 
+  const pendingOrders = orders.filter((o) => o.status === "pending");
+  const inDelivery = orders.filter((o) => ["preparing", "out_for_delivery"].includes(o.status));
+  const delivered = orders.filter((o) => o.status === "delivered");
+  const approvedPartners = partners.filter((p) => p.status === "approved");
+
   return {
     categories,
     products,
     orders,
     partners,
     users,
-    activeTab: "orders",
+    activeTab: "overview",
     stats: {
       orders: orders.length,
-      pendingOrders: orders.filter((o) => o.status === "pending").length,
+      pendingOrders: pendingOrders.length,
       pendingPayments: orders.filter((o) => o.payment && o.payment.status === "awaiting_confirmation").length,
+      inDelivery: inDelivery.length,
+      delivered: delivered.length,
       pendingPartners: partners.filter((p) => p.status === "pending").length,
+      partners: partners.length,
+      approvedPartners: approvedPartners.length,
       products: products.length,
       categories: categories.length,
       users: users.filter((u) => u.role === "user").length,
+      totalAccounts: users.length,
       revenue: orders.filter((o) => o.status !== "rejected").reduce((s, o) => s + (o.total || 0), 0)
     },
     statusLabels: ORDER_STATUS_LABELS,
@@ -38,10 +48,10 @@ function dashboardData() {
 }
 
 exports.dashboard = (req, res) => {
-  const tab = ["orders", "categories", "products", "partners", "users"].includes(req.query.tab)
+  const tab = ["overview", "orders", "categories", "products", "partners", "users"].includes(req.query.tab)
     ? req.query.tab
-    : "orders";
-  res.render("admin/dashboard", { title: "Admin Dashboard", ...dashboardData(), activeTab: tab });
+    : "overview";
+  res.render("admin/dashboard", { title: "Admin Console", ...dashboardData(), activeTab: tab });
 };
 
 exports.createCategory = (req, res) => {

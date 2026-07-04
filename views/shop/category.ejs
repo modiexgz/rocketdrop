@@ -29,8 +29,10 @@
             <div class="card-body">
               <h3><%= product.name %></h3>
               <p class="price">UGX <%= Number(product.price).toLocaleString() %></p>
-              <% if (currentUser) { %>
+              <% if (canOrder) { %>
                 <a href="/orders/new/<%= product.id %>" class="btn btn-primary btn-block">Order Now</a>
+              <% } else if (currentUser) { %>
+                <span class="staff-order-note muted">Staff accounts cannot place customer orders.</span>
               <% } else { %>
                 <a href="/auth/login" class="btn btn-primary btn-block">Sign in to Order</a>
               <% } %>

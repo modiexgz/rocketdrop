@@ -82,30 +82,20 @@ exports.dashboard = (req, res) => {
   const partner = currentPartner(req);
   if (!partner) return safeRedirect(req, res, "/partner/apply");
 
-  const tab = ["orders", "categories", "products"].includes(req.query.tab) ? req.query.tab : "orders";
+  const tab = ["categories", "products"].includes(req.query.tab) ? req.query.tab : "categories";
   const categories = db.find("categories", (c) => c.ownerType === "partner" && c.ownerId === partner.id);
   const products = db.find("products", (p) => p.ownerType === "partner" && p.ownerId === partner.id);
-  const orders = db
-    .find("orders", (o) => o.ownerType === "partner" && o.ownerId === partner.id)
-    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   res.render("partner/dashboard", {
-    title: `${partner.businessName} — Partner Dashboard`,
+    title: `${partner.businessName} — Manage Store`,
     partner,
     categories,
     products,
-    orders,
     activeTab: tab,
     stats: {
       categories: categories.length,
-      products: products.length,
-      orders: orders.length,
-      pending: orders.filter((o) => o.status === "pending").length,
-      revenue: orders.filter((o) => o.status !== "rejected").reduce((s, o) => s + (o.total || 0), 0)
-    },
-    statusLabels: ORDER_STATUS_LABELS,
-    paymentMethods: PAYMENT_METHODS,
-    paymentStatusLabels: PAYMENT_STATUS_LABELS
+      products: products.length
+    }
   });
 };
 

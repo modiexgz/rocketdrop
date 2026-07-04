@@ -3,81 +3,29 @@
 <head>
   <%- include('../partials/head') %>
 </head>
-<body class="dash-body">
+<body class="partner-body">
   <%- include('../partials/header') %>
 
-  <div class="dash-shell">
-    <%- include('../partials/dash/sidebar', {
-      sidebarTitle: partner.businessName,
-      activeTab,
-      items: [
-        { id: 'orders', href: '/partner/dashboard?tab=orders', icon: 'order', label: 'Orders', badge: stats.pending || null },
-        { id: 'categories', href: '/partner/dashboard?tab=categories', icon: 'search', label: 'Categories' },
-        { id: 'products', href: '/partner/dashboard?tab=products', icon: 'delivery', label: 'Products' }
-      ]
-    }) %>
-
-    <div class="dash-main">
-      <div class="dash-main-head">
-        <div>
-          <h1><%= partner.businessName %></h1>
-          <p class="muted"><%= partner.businessType %> · <%= partner.city || 'Uganda' %> · <%= partner.location %></p>
-        </div>
-        <span class="badge badge-partner-approved">Approved Partner</span>
+  <main class="container partner-manage">
+    <div class="partner-manage-head">
+      <div>
+        <p class="partner-manage-eyebrow">Partner Store</p>
+        <h1><%= partner.businessName %></h1>
+        <p class="muted"><%= partner.businessType %> · <%= partner.city || 'Uganda' %> · <%= partner.location %></p>
       </div>
+      <span class="badge badge-partner-approved">Approved Partner</span>
+    </div>
 
-      <% if (stats.pending > 0) { %>
-        <div class="notif-bar slide-up">
-          <span class="notif-bar-icon"><%- include('../partials/icon', { name: 'bell', size: 22 }) %></span>
-          <div class="notif-bar-items">
-            <a href="/partner/dashboard?tab=orders"><strong><%= stats.pending %></strong> order<%= stats.pending > 1 ? 's' : '' %> awaiting admin approval</a>
-          </div>
-        </div>
-      <% } %>
+    <nav class="partner-tabs">
+      <a href="/partner/dashboard?tab=categories" class="partner-tab <%= activeTab === 'categories' ? 'active' : '' %>">Categories</a>
+      <a href="/partner/dashboard?tab=products" class="partner-tab <%= activeTab === 'products' ? 'active' : '' %>">Products</a>
+    </nav>
 
-      <section class="panel <%= activeTab === 'orders' ? 'active' : '' %>" id="orders">
-        <div class="panel-head"><h2>Your Orders</h2></div>
-        <% if (orders.length === 0) { %>
-          <div class="empty-state"><p>No orders on your products yet.</p></div>
-        <% } else { %>
-          <div class="order-cards">
-            <% orders.forEach((order) => { %>
-              <% const pay = order.payment || { method: 'cod', status: 'unpaid' }; %>
-              <% const payMethod = paymentMethods[pay.method] || paymentMethods.cod; %>
-              <article class="order-card card">
-                <div class="order-card-top">
-                  <div>
-                    <h3>#<%= order.id %> · <%= order.item %></h3>
-                    <p class="muted"><%= order.userName %> · <%= order.userEmail %></p>
-                  </div>
-                  <span class="badge badge-<%= order.status %>"><%= statusLabels[order.status] %></span>
-                </div>
-                <div class="order-card-pills">
-                  <span class="pay-chip pay-<%= pay.method %>"><%= payMethod.label %></span>
-                  <strong class="price">UGX <%= Number(order.total).toLocaleString() %></strong>
-                </div>
-                <% if (order.status === 'pending') { %>
-                  <p class="action-hint muted">Waiting for admin to confirm payment and approve this order.</p>
-                <% } else if (order.status !== 'rejected' && order.status !== 'delivered') { %>
-                  <form method="POST" action="/partner/orders/<%= order.id %>/stage" class="inline stage-form">
-                    <select name="status" class="select-sm">
-                      <option value="preparing" <%= order.status === 'preparing' ? 'selected' : '' %>>Preparing</option>
-                      <option value="out_for_delivery" <%= order.status === 'out_for_delivery' ? 'selected' : '' %>>Out for Delivery</option>
-                      <option value="delivered">Delivered</option>
-                    </select>
-                    <button type="submit" class="btn btn-primary btn-sm">Update Stage</button>
-                  </form>
-                <% } %>
-              </article>
-            <% }) %>
-          </div>
-        <% } %>
-      </section>
-
+    <div class="partner-manage-content">
       <%- include('../partials/dash/categories-panel', { categories, basePath: '/partner', activeTab }) %>
       <%- include('../partials/dash/products-panel', { products, categories, basePath: '/partner', activeTab }) %>
     </div>
-  </div>
+  </main>
 
   <%- include('../partials/footer') %>
   <script src="/js/dashboard.js"></script>

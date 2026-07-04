@@ -1,8 +1,7 @@
 <section class="panel <%= activeTab === 'orders' ? 'active' : '' %>" id="orders">
-  <div class="panel-head">
+    <div class="panel-head">
     <h2>Orders</h2>
     <div class="panel-actions">
-      <button type="button" class="btn btn-primary btn-sm" data-open-modal="createOrderModal">+ New Order</button>
       <a class="btn btn-ghost btn-sm" href="/admin/reports/orders" target="_blank"><%- include('../icon', { name: 'print', size: 16 }) %> Report</a>
     </div>
   </div>

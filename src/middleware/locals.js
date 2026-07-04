@@ -1,5 +1,6 @@
 const db = require("../models/db");
 const notificationService = require("../services/notificationService");
+const { canPlaceOrders } = require("../utils/roles");
 
 module.exports = function locals(req, res, next) {
   try {
@@ -20,6 +21,7 @@ module.exports = function locals(req, res, next) {
     }
 
     res.locals.currentUser = req.session.user || null;
+    res.locals.canOrder = canPlaceOrders(req.session.user);
     res.locals.currentPath = req.path;
     res.locals.flash = req.session.flash || null;
     delete req.session.flash;
@@ -30,6 +32,7 @@ module.exports = function locals(req, res, next) {
   } catch (err) {
     console.error("[locals] middleware error:", err.message);
     res.locals.currentUser = req.session.user || null;
+    res.locals.canOrder = false;
     res.locals.currentPath = req.path;
     res.locals.flash = null;
     res.locals.unreadNotifications = 0;

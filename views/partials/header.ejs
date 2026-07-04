@@ -10,41 +10,47 @@
     </button>
 
     <ul class="nav-links" id="navLinks">
-      <li><a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Home</a></li>
+      <% if (!currentUser || currentUser.role !== 'admin') { %>
+        <li><a href="/" class="<%= currentPath === '/' ? 'active' : '' %>">Home</a></li>
+      <% } %>
       <% if (currentUser) { %>
-        <li><a href="/orders/my" class="<%= currentPath === '/orders/my' ? 'active' : '' %>">My Orders</a></li>
         <% if (currentUser.role === 'admin') { %>
-          <li><a href="/admin" class="<%= currentPath.startsWith('/admin') ? 'active' : '' %>">Admin</a></li>
+          <li><a href="/admin" class="<%= currentPath.startsWith('/admin') ? 'active' : '' %>">Admin Console</a></li>
         <% } else if (currentUser.role === 'partner') { %>
-          <li><a href="/partner/dashboard" class="<%= currentPath.startsWith('/partner/dashboard') ? 'active' : '' %>">Partner Dashboard</a></li>
+          <li><a href="/partner/dashboard" class="<%= currentPath.startsWith('/partner') ? 'active' : '' %>">Manage Store</a></li>
         <% } else { %>
+          <li><a href="/orders/my" class="<%= currentPath === '/orders/my' ? 'active' : '' %>">My Orders</a></li>
           <li><a href="/partner/apply" class="<%= currentPath === '/partner/apply' ? 'active' : '' %>">Become a Partner</a></li>
         <% } %>
       <% } %>
     </ul>
 
     <div class="nav-actions">
-      <button type="button" class="search-trigger" id="searchTrigger" aria-label="Search products">
-        <%- include('icon', { name: 'search', size: 18 }) %>
-        <span>Search</span>
-      </button>
+      <% if (!currentUser || currentUser.role !== 'admin') { %>
+        <button type="button" class="search-trigger" id="searchTrigger" aria-label="Search products">
+          <%- include('icon', { name: 'search', size: 18 }) %>
+          <span>Search</span>
+        </button>
+      <% } %>
 
       <% if (currentUser) { %>
-        <div class="notif-wrap">
-          <button type="button" class="notif-bell" id="notifBell" aria-label="Notifications">
-            <%- include('icon', { name: 'bell', size: 20 }) %>
-            <span class="notif-badge <%= unreadNotifications > 0 ? 'show' : '' %>" id="notifBadge"><%= unreadNotifications %></span>
-          </button>
-          <div class="notif-dropdown" id="notifDropdown">
-            <div class="notif-dropdown-head">
-              <strong>Notifications</strong>
-              <a href="/notifications">View all</a>
-            </div>
-            <div class="notif-dropdown-list" id="notifDropdownList">
-              <p class="notif-empty">Loading…</p>
+        <% if (currentUser.role !== 'admin') { %>
+          <div class="notif-wrap">
+            <button type="button" class="notif-bell" id="notifBell" aria-label="Notifications">
+              <%- include('icon', { name: 'bell', size: 20 }) %>
+              <span class="notif-badge <%= unreadNotifications > 0 ? 'show' : '' %>" id="notifBadge"><%= unreadNotifications %></span>
+            </button>
+            <div class="notif-dropdown" id="notifDropdown">
+              <div class="notif-dropdown-head">
+                <strong>Notifications</strong>
+                <a href="/notifications">View all</a>
+              </div>
+              <div class="notif-dropdown-list" id="notifDropdownList">
+                <p class="notif-empty">Loading…</p>
+              </div>
             </div>
           </div>
-        </div>
+        <% } %>
         <span class="nav-user">Hi, <%= currentUser.fullName.split(' ')[0] %></span>
         <a href="/auth/logout" class="btn btn-ghost btn-sm">Logout</a>
       <% } else { %>
@@ -73,9 +79,11 @@
   </div>
 </div>
 
-<button type="button" class="search-fab" id="searchFab" aria-label="Open search">
-  <%- include('icon', { name: 'search', size: 22 }) %>
-</button>
+<% if (!currentUser || currentUser.role !== 'admin') { %>
+  <button type="button" class="search-fab" id="searchFab" aria-label="Open search">
+    <%- include('icon', { name: 'search', size: 22 }) %>
+  </button>
+<% } %>
 
 <div class="toast-stack" id="toastStack"></div>
 
